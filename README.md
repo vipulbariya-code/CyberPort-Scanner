@@ -2,187 +2,274 @@
 
 <div align="center">
 
-**A premium, cyberpunk-themed network port scanner built for educational and authorized security testing.**
+<h1>🛰️ CyberPort Scanner</h1>
 
-![Python](https://img.shields.io/badge/Python-3.10+-00ff9d?style=flat-square&logo=python&logoColor=black)
-![Flask](https://img.shields.io/badge/Flask-3.0-00e5ff?style=flat-square&logo=flask&logoColor=black)
-![SQLite](https://img.shields.io/badge/SQLite-3-00ff9d?style=flat-square&logo=sqlite&logoColor=black)
-![License](https://img.shields.io/badge/License-MIT-00e5ff?style=flat-square)
+<p>
+A modern <b>Cyberpunk-Themed TCP Port Scanner</b> built with <b>Python, Flask, HTML, CSS & JavaScript</b> for educational and authorized network security testing.
+</p>
+
+<p>
+
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=for-the-badge&logo=flask&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![MIT License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+![Status](https://img.shields.io/badge/Status-Live-success?style=for-the-badge)
+
+</p>
+
+### 🌐 Live Demo
+## https://cyberport-scanner.onrender.com/
+
+### 💻 GitHub Repository
+## https://github.com/vipulbariya-code/CyberPort-Scanner
 
 </div>
 
 ---
 
-## ⚠️ Disclaimer — Read Before Use
+# 🚀 About
 
-**CyberPort Scanner is built strictly for educational purposes and authorized security testing.**
+CyberPort Scanner is a professional **TCP Port Scanner** designed with a futuristic **Cyberpunk UI**. It allows users to scan ports on systems they own or are authorized to test while providing real-time scan progress, scan history, CSV export, statistics, and a premium hacker-style interface.
 
-- Only scan hosts, networks, or IP ranges that **you own** or have **explicit written permission** to test.
-- Unauthorized port scanning may violate computer-crime laws in your jurisdiction (e.g. the U.S. Computer Fraud and Abuse Act, the UK Computer Misuse Act, or equivalents elsewhere).
-- The scanning engine performs a standard **TCP connect scan** only — no exploitation, no vulnerability probing, no packet crafting.
-- The author(s) of this project accept **no liability** for misuse of this software. By using it, you agree to use it responsibly and legally.
+This project was built for learning **Cyber Security**, **Networking**, and **Python Flask Development**.
 
 ---
 
-## ✨ Features
+# ✨ Features
 
-- 🎨 **Futuristic cyberpunk UI** — glassmorphism cards, animated Matrix rain, neon green/cyan glow, animated grid background
-- ⚡ **Multi-threaded TCP port scanning** via Python sockets (`ThreadPoolExecutor`)
-- 📊 **Live scan progress** — real-time progress bar, elapsed timer, open-port counter (polling-based)
-- 🔍 **Searchable & sortable results table** with open/closed filtering
-- 🏷️ **Common service name detection** (HTTP, HTTPS, SSH, FTP, SMTP, DNS, RDP, MySQL, and more)
-- 📁 **CSV export** and **one-click clipboard copy** of results
-- 🕓 **Persistent scan history** stored in SQLite, with search, pagination, per-record delete, and clear-all
-- 📈 **Dashboard widgets** — total scans, open ports, closed ports, last scan, scan duration
-- 🛡️ **Input validation & rate limiting** on every scan request
-- 📱 **Fully responsive** — desktop, tablet, and mobile layouts
-- ♿ **Accessible** — visible focus states, semantic HTML, `prefers-reduced-motion` support
-- 🚀 **Production-ready** — clean modular architecture, Gunicorn-ready, deploy configs included for Render & Railway
+✅ Modern Cyberpunk UI
+
+✅ Animated Matrix Background
+
+✅ Multi-threaded TCP Port Scanner
+
+✅ Scan IP Address or Domain
+
+✅ Live Progress Bar
+
+✅ Real-Time Results
+
+✅ Common Service Detection
+
+✅ CSV Export
+
+✅ SQLite Database
+
+✅ Scan History
+
+✅ Search & Filter
+
+✅ Responsive Design
+
+✅ Flask Backend
+
+✅ REST API
+
+✅ Security Headers
+
+✅ Rate Limiting
+
+✅ Production Ready
 
 ---
 
-## 🖼️ Screenshots
+# 🖼 Screenshots
 
-> _Add your own screenshots here after running the app locally._
+> Coming Soon...
 
 | Home | Dashboard | History |
-|---|---|---|
-| `screenshots/home.png` | `screenshots/dashboard.png` | `screenshots/history.png` |
+|------|-----------|----------|
+| Add Screenshot | Add Screenshot | Add Screenshot |
 
 ---
 
-## 🧱 Folder Structure
+# ⚙ Tech Stack
 
-```
-cyberport-scanner/
-├── backend/
-│   ├── app.py              # Flask application factory & entry point
-│   ├── config.py           # Environment configuration
-│   ├── models.py           # SQLite data access layer
-│   ├── routes.py           # Page + REST API routes
-│   └── scanner.py          # Multi-threaded TCP scan engine
-├── templates/
-│   ├── base.html            # Shared layout (header, footer, loading screen)
-│   ├── index.html           # Home page
-│   ├── dashboard.html       # Scanner dashboard
-│   ├── history.html         # Scan history
-│   ├── about.html           # About / methodology / ethics
-│   ├── contact.html         # Contact page
-│   └── 404.html             # Custom error page
-├── static/
-│   ├── css/
-│   │   ├── style.css         # Design tokens, layout, nav, footer, cards
-│   │   ├── pages.css         # Page-specific components
-│   │   └── animations.css    # Keyframes & motion
-│   ├── js/
-│   │   ├── main.js           # Toasts, nav, reveal-on-scroll, typing effect
-│   │   ├── matrix.js          # Matrix rain canvas animation
-│   │   ├── scanner.js         # Dashboard: validation, polling, results table
-│   │   ├── history.js         # History page logic
-│   │   └── charts.js          # Chart.js statistics
-│   ├── images/
-│   └── fonts/
-├── database/                # SQLite database file lives here (gitignored)
-├── exports/                 # Generated CSV exports (gitignored)
+## Backend
+
+- Python
+- Flask
+- SQLite
+- Socket Programming
+- Flask-Limiter
+- Gunicorn
+
+## Frontend
+
+- HTML5
+- CSS3
+- JavaScript
+- Chart.js
+- Font Awesome
+
+---
+
+# 📂 Folder Structure
+
+```text
+CyberPort-Scanner
+│
+├── backend
+│   ├── app.py
+│   ├── scanner.py
+│   ├── routes.py
+│   ├── models.py
+│   └── config.py
+│
+├── static
+│   ├── css
+│   ├── js
+│   ├── images
+│   └── fonts
+│
+├── templates
+│
+├── database
+│
+├── exports
+│
 ├── requirements.txt
-├── Procfile                 # Render/Railway/Heroku-style start command
-├── render.yaml               # Render deployment blueprint
-├── railway.json               # Railway deployment config
+├── render.yaml
+├── railway.json
+├── Procfile
+├── LICENSE
 └── README.md
 ```
 
 ---
 
-## 🛠️ Technologies Used
+# 🚀 Installation
 
-**Backend:** Python 3, Flask, Flask-Limiter, SQLite, `socket`, `concurrent.futures`, Gunicorn
-**Frontend:** HTML5, CSS3 (custom design system, no framework), Vanilla JavaScript, Chart.js, Font Awesome 6
-**Fonts:** Orbitron (display), JetBrains Mono (terminal/data), Rajdhani (UI labels)
-
----
-
-## 🚀 Installation
-
-### Prerequisites
-- Python 3.10 or newer
-- `pip`
-
-### Steps
+Clone Repository
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/yourusername/cyberport-scanner.git
-cd cyberport-scanner
+git clone https://github.com/vipulbariya-code/CyberPort-Scanner.git
+```
 
-# 2. Create a virtual environment
-python3 -m venv venv
-source venv/bin/activate      # Windows: venv\Scripts\activate
+Open Folder
 
-# 3. Install dependencies
+```bash
+cd CyberPort-Scanner
+```
+
+Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-# 4. Run the app
+Run Application
+
+```bash
 cd backend
+
 python app.py
 ```
 
-The app will be available at **http://127.0.0.1:5000**.
+Open Browser
 
-The SQLite database is created automatically on first run at `database/cyberport.db`.
-
----
-
-## 📖 Usage
-
-1. Open the **Scanner Dashboard** (`/dashboard`).
-2. Enter a target IPv4 address or domain **that you own or are authorized to test** (e.g. `127.0.0.1`, your own LAN device, or a lab VM).
-3. Set a start and end port (max 1024 ports per scan).
-4. Click **Start Scan** and watch live progress.
-5. Review results in the sortable/searchable table — filter to "Open Only", search by port/service, export to CSV, or copy to clipboard.
-6. Visit **Scan History** to review, search, or delete past scans.
-
-### Example API request
-
-```bash
-curl -X POST http://127.0.0.1:5000/api/scan/start \
-  -H "Content-Type: application/json" \
-  -d '{"target": "127.0.0.1", "start_port": 1, "end_port": 1024}'
+```
+http://127.0.0.1:5000
 ```
 
 ---
 
-## 🔐 Security Notes
+# 🌐 Live Website
 
-- Rate limiting is applied to the scan API (default: 10 scans/minute per client) to prevent abuse.
-- Port ranges are capped at 1024 ports per request.
-- Input is validated server-side for both target format and port range before any socket is opened.
-- Standard security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`) are set on every response.
-- This project performs **no exploitation, no authentication bypass, and no payload delivery** of any kind.
+## 🚀 https://cyberport-scanner.onrender.com/
 
 ---
 
-## ☁️ Deployment
+# 📖 Usage
+
+1. Open Dashboard
+2. Enter IP Address or Domain
+3. Select Port Range
+4. Click Start Scan
+5. View Live Results
+6. Export CSV
+7. View Scan History
+
+---
+
+# 🔐 Security
+
+- TCP Connect Scan Only
+- No Exploitation
+- No Payload Delivery
+- Rate Limited
+- Input Validation
+- Educational Purpose Only
+
+---
+
+# 📦 Deployment
 
 ### Render
-1. Push this repo to GitHub.
-2. Create a new **Web Service** on [Render](https://render.com), connect your repo — `render.yaml` is auto-detected.
-3. Render will run `pip install -r requirements.txt` and start with the Gunicorn command in the Procfile.
 
-### Railway
-1. Push this repo to GitHub.
-2. Create a new project on [Railway](https://railway.app) from your repo — `railway.json` is auto-detected.
-3. Railway builds with Nixpacks and starts the app via the configured start command.
+- Connect GitHub Repository
+- Deploy Web Service
+- Build Command
 
-Both platforms provide a `PORT` environment variable automatically, which `app.py` and the Procfile already respect.
+```bash
+pip install -r requirements.txt
+```
 
----
+Start Command
 
-## 📄 License
-
-This project is licensed under the **MIT License** — see the `LICENSE` file for details.
+```bash
+python backend/app.py
+```
 
 ---
 
-## 🙋 Disclaimer (again, because it matters)
+# 📜 License
 
-CyberPort Scanner is an educational project. It is not a substitute for professional penetration-testing tools, and it should never be used against systems without proper authorization. If you're learning network security, always practice in a legal, isolated environment (your own lab, a VM, or a dedicated CTF platform).
+This project is licensed under the MIT License.
+
+---
+
+# 👨‍💻 Author
+
+## Vipul Bariya
+
+🌐 Portfolio
+
+https://vipulbariya.netlify.app/
+
+💻 GitHub
+
+https://github.com/vipulbariya-code
+
+🚀 Live Project
+
+https://cyberport-scanner.onrender.com/
+
+---
+
+# ⭐ Support
+
+If you like this project, please consider giving it a ⭐ Star on GitHub.
+
+It motivates me to build more awesome Open Source Projects.
+
+---
+
+# ⚠ Disclaimer
+
+CyberPort Scanner is developed strictly for educational purposes and authorized security testing.
+
+Never scan systems, servers, or networks without proper permission.
+
+The developer is not responsible for any misuse of this software.
+
+---
+
+<div align="center">
+
+## ⭐ Thanks for Visiting ⭐
+
+Made with ❤️ by **Vipul Bariya**
+
+</div>
