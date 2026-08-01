@@ -76,21 +76,17 @@ This project was built for learning **Cyber Security**, **Networking**, and **Py
 
 ## 🖼️ Screenshots
 
-### 🏠 Home Page
+### 🏠 Home
 
-<img src="img.1.1.png" width="100%" alt=" Homepage">
+![Home](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/img1.1.png)
 
----
+### 📊 Dashboard
 
-### 📊 Scanner Dashboard
+![Dashboard](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/img2.png)
 
-![Dashboard](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/screenshots/dashboard.png)
+### 📜 History
 
----
-
-### 📜 Scan History
-
-![History](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/screenshots/history.png)
+![History](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/img3.png)
 
 
 
