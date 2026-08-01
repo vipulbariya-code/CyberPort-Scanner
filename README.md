@@ -80,7 +80,7 @@ This project was built for learning **Cyber Security**, **Networking**, and **Py
 
 ![Home](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/img1.1.png)
 
-### 📊 Dashboard
+### 🛰️ Port Scanner
 
 ![Dashboard](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/img2.png)
 
