@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Contact — CyberPort Scanner{% endblock %}
+{% block description %}Get in touch with the CyberPort Scanner team for questions, feedback, or collaboration.{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="section-kicker">get in touch</div>
+      <h1 class="section-title">Contact <span class="text-gradient">Us</span></h1>
+      <p class="section-sub" style="margin:0 auto;">Questions about the project, found a bug, or want to collaborate? Send a message.</p>
+    </div>
+
+    <div class="contact-grid">
+      <div class="glass-card contact-info-card reveal">
+        <div class="contact-method">
+          <i class="fa-solid fa-envelope"></i>
+          <div><div class="m-label">Email</div><div class="m-value">contact@cyberportscanner.dev</div></div>
+        </div>
+        <div class="contact-method">
+          <i class="fa-brands fa-github"></i>
+          <div><div class="m-label">GitHub</div><div class="m-value">github.com/yourusername/cyberport-scanner</div></div>
+        </div>
+        <div class="contact-method">
+          <i class="fa-solid fa-comments"></i>
+          <div><div class="m-label">Response Time</div><div class="m-value">Usually within 48 hours</div></div>
+        </div>
+        <div class="contact-method">
+          <i class="fa-solid fa-shield-halved"></i>
+          <div><div class="m-label">Security Reports</div><div class="m-value">Please report vulnerabilities responsibly via email.</div></div>
+        </div>
+      </div>
+
+      <div class="glass-card contact-form-card reveal delay-1">
+        <form class="contact-form" id="contact-form">
+          <div class="form-group">
+            <label for="c-name">Name</label>
+            <input type="text" id="c-name" class="form-input" placeholder="Your name" required>
+          </div>
+          <div class="form-group">
+            <label for="c-email">Email</label>
+            <input type="email" id="c-email" class="form-input" placeholder="you@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="c-subject">Subject</label>
+            <input type="text" id="c-subject" class="form-input" placeholder="What's this about?" required>
+          </div>
+          <div class="form-group">
+            <label for="c-message">Message</label>
+            <textarea id="c-message" class="form-input" placeholder="Tell us more..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Message</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // Demo-only handler: this is a static contact form with no backend
+  // email endpoint wired up. Wire this to your own mail service / API.
+  document.getElementById('contact-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    Toast.show('Message queued — thanks for reaching out! (Demo form — connect a backend to send for real.)', 'success');
+    this.reset();
+  });
+</script>
+{% endblock %}

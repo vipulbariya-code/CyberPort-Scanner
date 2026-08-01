@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}404 — Port Not Found | CyberPort Scanner{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container">
+    <div class="error-code error-glitch" data-text="404">404</div>
+    <h1 class="section-title" style="margin-top:10px;">Route <span class="text-gradient">Not Found</span></h1>
+    <p class="section-sub" style="margin:0 auto;">This port isn't listening. The page you're looking for doesn't exist or has moved.</p>
+
+    <div class="glass-card error-msg-terminal">
+      <div class="terminal-topbar">
+        <span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span>
+        <span class="terminal-title">root@cyberport:~</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt">$</span> curl -I {{ request.path }}</div>
+        <div style="color:var(--alert-magenta);">HTTP/1.1 404 Not Found</div>
+        <div>connection: closed</div>
+        <div><span class="prompt">$</span> <span class="cursor">&nbsp;</span></div>
+      </div>
+    </div>
+
+    <div class="hero-actions" style="margin-top:36px;">
+      <a href="/" class="btn btn-primary"><i class="fa-solid fa-house"></i> Back to Home</a>
+      <a href="/dashboard" class="btn btn-outline"><i class="fa-solid fa-bolt"></i> Go to Scanner</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

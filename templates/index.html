@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}CyberPort Scanner — Professional Network Port Scanner{% endblock %}
+
+{% block content %}
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-badge reveal">
+      <i class="fa-solid fa-shield-halved"></i> Educational &amp; Authorized Testing Only
+    </div>
+    <h1 class="hero-title reveal delay-1">CyberPort Scanner</h1>
+    <div class="hero-typed-line reveal delay-2">
+      <span id="typed-text"></span><span class="cursor">&nbsp;</span>
+    </div>
+    <p class="hero-sub reveal delay-2">
+      Professional Network Port Scanner for Educational &amp; Authorized Security Testing.
+      Understand open ports, running services, and your own attack surface — the right way.
+    </p>
+    <div class="hero-actions reveal delay-3">
+      <a href="/dashboard" class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Start Scan</a>
+      <a href="/about" class="btn btn-outline"><i class="fa-solid fa-book"></i> How It Works</a>
+    </div>
+
+    <div class="hero-terminal glass-card reveal delay-4">
+      <div class="terminal-topbar">
+        <span class="terminal-dot red"></span><span class="terminal-dot yellow"></span><span class="terminal-dot green"></span>
+        <span class="terminal-title">root@cyberport:~</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="prompt">$</span> cyberport scan <span class="path">--target 192.168.1.10</span> --ports 1-1024</div>
+        <div>[INFO] Resolving target... OK</div>
+        <div>[INFO] Scanning 1024 ports with 100 threads</div>
+        <div class="terminal-line-open">[OPEN] 22/tcp   ssh</div>
+        <div class="terminal-line-open">[OPEN] 80/tcp   http</div>
+        <div class="terminal-line-open">[OPEN] 443/tcp  https</div>
+        <div>[DONE] Scan completed in 2.41s — 3 open / 1021 closed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STATS ================= -->
+<section class="page-section tight">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="glass-card stat-card reveal">
+        <div class="stat-value" data-stat="total_scans">0</div>
+        <div class="stat-label">Total Scans Run</div>
+      </div>
+      <div class="glass-card stat-card reveal delay-1">
+        <div class="stat-value" data-stat="total_open_ports">0</div>
+        <div class="stat-label">Open Ports Found</div>
+      </div>
+      <div class="glass-card stat-card reveal delay-2">
+        <div class="stat-value" data-stat="total_closed_ports">0</div>
+        <div class="stat-label">Closed Ports Checked</div>
+      </div>
+      <div class="glass-card stat-card reveal delay-3">
+        <div class="stat-value" data-stat="avg_duration">0</div>
+        <div class="stat-label">Avg. Scan Time (s)</div>
+      </div>
+    </div>
+
+    <div class="glass-card reveal delay-4" style="margin-top:22px; padding:26px; max-width:420px; margin-left:auto; margin-right:auto;">
+      <div style="height:220px;"><canvas id="home-stats-chart"></canvas></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURES ================= -->
+<section class="page-section" id="features">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="section-kicker">core capabilities</div>
+      <h2 class="section-title">Everything a <span class="text-gradient">security learner</span> needs</h2>
+      <p class="section-sub" style="margin: 0 auto;">A focused toolset for understanding TCP port states, common services, and scan reporting — without the complexity of full offensive frameworks.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="glass-card feature-card reveal">
+        <div class="feature-icon"><i class="fa-solid fa-network-wired"></i></div>
+        <div class="feature-title">Multi-threaded TCP Scanning</div>
+        <div class="feature-desc">Concurrent socket connections scan large port ranges quickly using Python's threading model.</div>
+      </div>
+      <div class="glass-card feature-card reveal delay-1">
+        <div class="feature-icon"><i class="fa-solid fa-list-check"></i></div>
+        <div class="feature-title">Live Progress Tracking</div>
+        <div class="feature-desc">Watch scan progress, elapsed time, and discovered open ports update in real time.</div>
+      </div>
+      <div class="glass-card feature-card reveal delay-2">
+        <div class="feature-icon"><i class="fa-solid fa-table-list"></i></div>
+        <div class="feature-title">Searchable Results Table</div>
+        <div class="feature-desc">Sort by port, filter by state, and instantly search results without reloading the page.</div>
+      </div>
+      <div class="glass-card feature-card reveal">
+        <div class="feature-icon"><i class="fa-solid fa-file-csv"></i></div>
+        <div class="feature-title">CSV Export &amp; Copy</div>
+        <div class="feature-desc">Download a clean CSV report of any scan, or copy results straight to your clipboard.</div>
+      </div>
+      <div class="glass-card feature-card reveal delay-1">
+        <div class="feature-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+        <div class="feature-title">Full Scan History</div>
+        <div class="feature-desc">Every scan is logged to SQLite with target, ports, duration, and results for later review.</div>
+      </div>
+      <div class="glass-card feature-card reveal delay-2">
+        <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="feature-title">Built-in Safety Rails</div>
+        <div class="feature-desc">Input validation, rate limiting, and range caps keep the tool aligned with responsible, authorized use.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TECH STACK ================= -->
+<section class="page-section tight">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="section-kicker">under the hood</div>
+      <h2 class="section-title">Technology <span class="text-gradient">Stack</span></h2>
+    </div>
+    <div class="tech-grid">
+      <div class="glass-card tech-chip reveal"><i class="fa-brands fa-python"></i><span>Python</span></div>
+      <div class="glass-card tech-chip reveal delay-1"><i class="fa-solid fa-flask"></i><span>Flask</span></div>
+      <div class="glass-card tech-chip reveal delay-2"><i class="fa-solid fa-database"></i><span>SQLite</span></div>
+      <div class="glass-card tech-chip reveal delay-3"><i class="fa-brands fa-js"></i><span>JavaScript</span></div>
+      <div class="glass-card tech-chip reveal delay-4"><i class="fa-solid fa-chart-pie"></i><span>Chart.js</span></div>
+      <div class="glass-card tech-chip reveal delay-5"><i class="fa-solid fa-plug"></i><span>Sockets</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FAQ ================= -->
+<section class="page-section" id="faq">
+  <div class="container">
+    <div class="section-head center reveal">
+      <div class="section-kicker">questions</div>
+      <h2 class="section-title">Frequently Asked</h2>
+    </div>
+    <div class="faq-list">
+      <div class="glass-card faq-item reveal">
+        <button class="faq-question">Is it legal to use CyberPort Scanner? <i class="fa-solid fa-plus"></i></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Scanning is legal when performed against systems you own or have explicit written authorization to test — for example your own home lab, a personal VPS, or a client environment covered by a signed testing agreement. Scanning systems without permission may violate computer-crime laws such as the U.S. Computer Fraud and Abuse Act.</div></div>
+      </div>
+      <div class="glass-card faq-item reveal delay-1">
+        <button class="faq-question">What scanning technique does it use? <i class="fa-solid fa-plus"></i></button>
+        <div class="faq-answer"><div class="faq-answer-inner">A standard TCP connect scan: the server attempts a full three-way handshake on each port using Python's socket module. This is the same fundamental technique taught in introductory network security courses.</div></div>
+      </div>
+      <div class="glass-card faq-item reveal delay-2">
+        <button class="faq-question">How many ports can I scan at once? <i class="fa-solid fa-plus"></i></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Up to 1024 ports per scan by default, which keeps scans fast and prevents abuse of shared hosting resources. Run multiple scans back-to-back to cover a wider range.</div></div>
+      </div>
+      <div class="glass-card faq-item reveal delay-3">
+        <button class="faq-question">Can I export my scan results? <i class="fa-solid fa-plus"></i></button>
+        <div class="faq-answer"><div class="faq-answer-inner">Yes — every completed scan can be exported as a CSV report from the Dashboard or Scan History page, or copied directly to your clipboard.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

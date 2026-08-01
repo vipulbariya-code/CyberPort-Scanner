@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Scan History — CyberPort Scanner{% endblock %}
+{% block description %}Browse, search, export, and manage your past network port scan records.{% endblock %}
+
+{% block content %}
+<section class="page-section tight">
+  <div class="container">
+    <div class="section-head reveal">
+      <div class="section-kicker">scan history</div>
+      <h1 class="section-title" style="margin-bottom:0;">Past <span class="text-gradient">Scan Records</span></h1>
+    </div>
+
+    <div class="history-toolbar reveal delay-1">
+      <div class="results-search" style="min-width:280px;">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" class="form-input" id="history-search" placeholder="Search by target or IP...">
+      </div>
+      <button class="btn btn-danger btn-sm" id="btn-clear-history"><i class="fa-solid fa-trash-can"></i> Clear All History</button>
+    </div>
+
+    <div class="history-grid" id="history-list"></div>
+
+    <div class="empty-state glass-card" id="history-empty" style="display:none; padding:60px 20px;">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <div>No scans yet — run your first scan from the Dashboard.</div>
+      <a href="/dashboard" class="btn btn-primary btn-sm" style="margin-top:18px;"><i class="fa-solid fa-bolt"></i> Go to Scanner</a>
+    </div>
+
+    <div class="pagination" id="history-pagination"></div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/history.js') }}"></script>
+{% endblock %}

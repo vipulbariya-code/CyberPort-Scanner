@@ -1,0 +1,81 @@
+/* =====================================================================
+   Animations
+   ===================================================================== */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.reveal { opacity: 0; }
+.reveal.in-view { animation: fadeUp 0.7s var(--ease-out) forwards; }
+.reveal.delay-1.in-view { animation-delay: 0.08s; }
+.reveal.delay-2.in-view { animation-delay: 0.16s; }
+.reveal.delay-3.in-view { animation-delay: 0.24s; }
+.reveal.delay-4.in-view { animation-delay: 0.32s; }
+.reveal.delay-5.in-view { animation-delay: 0.4s; }
+
+@keyframes floaty {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.float { animation: floaty 4s ease-in-out infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+
+@keyframes pageFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+main { animation: pageFade 0.5s var(--ease-out); }
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 18px rgba(0,255,157,0.25); }
+  50% { box-shadow: 0 0 34px rgba(0,255,157,0.5); }
+}
+.glow-pulse { animation: glowPulse 2.6s ease-in-out infinite; }
+
+@keyframes scanSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.scan-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--signal-green), transparent);
+  opacity: 0;
+}
+.scan-panel.scanning::before {
+  opacity: 1;
+  animation: scanSweep 2s linear infinite;
+}
+.scan-panel { position: relative; overflow: hidden; }
+
+@keyframes glitchShift {
+  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(0); }
+  20% { clip-path: inset(10% 0 60% 0); transform: translate(-3px, 1px); }
+  40% { clip-path: inset(60% 0 5% 0); transform: translate(3px, -1px); }
+  60% { clip-path: inset(30% 0 40% 0); transform: translate(-2px, 0); }
+  80% { clip-path: inset(5% 0 70% 0); transform: translate(2px, 1px); }
+}
+.error-glitch::before, .error-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0; left: 0; width: 100%;
+  color: var(--signal-cyan);
+  opacity: 0.7;
+}
+.error-glitch::before { animation: glitchShift 3.2s infinite linear; left: 2px; color: var(--alert-magenta); }
+.error-glitch::after { animation: glitchShift 2.6s infinite linear reverse; left: -2px; color: var(--signal-cyan); }
+
+.row-in { animation: fadeUp 0.4s var(--ease-out) forwards; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

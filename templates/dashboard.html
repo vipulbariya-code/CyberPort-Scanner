@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Scanner Dashboard — CyberPort Scanner{% endblock %}
+{% block description %}Run authorized TCP port scans, track live progress, and browse a searchable, sortable results table.{% endblock %}
+
+{% block content %}
+<section class="page-section tight">
+  <div class="container">
+
+    <div class="disclaimer-banner reveal">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <p><strong>Authorized use only:</strong> Only scan IP addresses or domains that you own, or that you have explicit written permission to test. This tool is provided for educational and authorized security-testing purposes only.</p>
+    </div>
+
+    <div class="dash-header reveal">
+      <div>
+        <div class="section-kicker">scanner dashboard</div>
+        <h1 class="section-title" style="margin-bottom:0;">Network Port <span class="text-gradient">Scanner</span></h1>
+      </div>
+    </div>
+
+    <!-- Widgets -->
+    <div class="dash-widgets reveal delay-1">
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Total Scans</span><i class="fa-solid fa-radar widget-icon"></i></div>
+        <div class="widget-value" id="widget-total-scans">0</div>
+      </div>
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Open Ports</span><i class="fa-solid fa-lock-open widget-icon"></i></div>
+        <div class="widget-value" id="widget-open-ports" style="color:var(--signal-green);">0</div>
+      </div>
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Closed Ports</span><i class="fa-solid fa-lock widget-icon"></i></div>
+        <div class="widget-value" id="widget-closed-ports" style="color:var(--alert-magenta);">0</div>
+      </div>
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Last Scan</span><i class="fa-solid fa-crosshairs widget-icon"></i></div>
+        <div class="widget-value" id="widget-last-scan" style="font-size:1.05rem;">—</div>
+      </div>
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Scan Duration</span><i class="fa-solid fa-stopwatch widget-icon"></i></div>
+        <div class="widget-value" id="widget-duration">—</div>
+      </div>
+    </div>
+
+    <!-- Scan form -->
+    <div class="glass-card scan-panel reveal delay-2" id="scan-panel">
+      <div class="scan-panel-head">
+        <i class="fa-solid fa-terminal"></i>
+        <h2>New Scan</h2>
+      </div>
+
+      <form id="scan-form" novalidate>
+        <div class="scan-form-grid">
+          <div class="form-group">
+            <label for="target-input">Target (IPv4 or Domain)</label>
+            <input type="text" id="target-input" class="form-input" placeholder="e.g. 192.168.1.1 or example.com" autocomplete="off" required>
+            <span class="form-error" id="target-error"></span>
+          </div>
+          <div class="form-group">
+            <label for="start-port-input">Start Port</label>
+            <input type="number" id="start-port-input" class="form-input" placeholder="1" min="1" max="65535" value="1" required>
+          </div>
+          <div class="form-group">
+            <label for="end-port-input">End Port</label>
+            <input type="number" id="end-port-input" class="form-input" placeholder="1024" min="1" max="65535" value="1024" required>
+            <span class="form-error" id="port-error"></span>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn btn-primary" id="scan-btn"><i class="fa-solid fa-bolt"></i> Start Scan</button>
+          </div>
+        </div>
+
+        <div class="presets-row">
+          <button type="button" class="preset-chip" data-range="1-1024">Well-known (1–1024)</button>
+          <button type="button" class="preset-chip" data-range="1-100">Quick (1–100)</button>
+          <button type="button" class="preset-chip" data-range="20-25">FTP/SSH (20–25)</button>
+          <button type="button" class="preset-chip" data-range="80-443">Web (80–443)</button>
+          <button type="button" class="preset-chip" data-range="3306-3389">DB/RDP (3306–3389)</button>
+        </div>
+
+        <div class="scan-progress-wrap" id="scan-progress-wrap">
+          <div class="progress-meta">
+            <span>SCANNING IN PROGRESS…</span>
+            <span class="val" id="progress-elapsed">0.0s</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+          <div class="progress-stats-row">
+            <span class="progress-stat">Ports scanned: <b id="progress-scanned">0 / 0</b></span>
+            <span class="progress-stat">Open found: <b id="progress-open" style="color:var(--signal-green);">0</b></span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Results -->
+    <div class="glass-card results-panel reveal delay-3" id="results-panel" style="display:none;">
+      <div class="results-toolbar">
+        <div class="results-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" class="form-input" id="results-search-input" placeholder="Search by port or service...">
+        </div>
+        <div class="results-actions">
+          <span id="results-count" style="align-self:center; color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;"></span>
+          <button class="btn btn-outline btn-sm" id="btn-copy-results"><i class="fa-solid fa-copy"></i> Copy</button>
+          <button class="btn btn-outline btn-sm" id="btn-export-csv"><i class="fa-solid fa-download"></i> Export CSV</button>
+        </div>
+      </div>
+
+      <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All Results</button>
+        <button class="filter-tab" data-filter="open">Open Only</button>
+      </div>
+
+      <div class="results-table-wrap">
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th data-sort="port">Port <i class="fa-solid fa-sort"></i></th>
+              <th data-sort="service">Service <i class="fa-solid fa-sort"></i></th>
+              <th data-sort="state">State <i class="fa-solid fa-sort"></i></th>
+            </tr>
+          </thead>
+          <tbody id="results-body"></tbody>
+        </table>
+        <div class="empty-state" id="results-empty" style="display:none;">
+          <i class="fa-solid fa-inbox"></i>
+          <div>No results match your filters.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/scanner.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}About — CyberPort Scanner{% endblock %}
+{% block description %}Learn how CyberPort Scanner works, the TCP scanning technique it uses, and the ethical guidelines behind it.{% endblock %}
+
+{% block content %}
+<section class="page-section">
+  <div class="container">
+
+    <div class="about-hero reveal">
+      <div class="section-kicker" style="justify-content:center;">about the project</div>
+      <h1 class="section-title">Built to <span class="text-gradient">teach</span>, not exploit</h1>
+      <p class="section-sub" style="margin:0 auto;">CyberPort Scanner exists to make TCP/IP networking and port-scanning fundamentals approachable, visual, and safe to practice — the same core technique used by tools like Nmap, distilled for learning.</p>
+    </div>
+
+    <div class="section-head center reveal">
+      <div class="section-kicker">methodology</div>
+      <h2 class="section-title">How a scan works</h2>
+    </div>
+    <div class="method-grid">
+      <div class="glass-card method-card reveal">
+        <div class="method-num">01 / RESOLVE</div>
+        <p>The target hostname or IPv4 address is validated, then resolved to an IP using standard DNS lookups.</p>
+      </div>
+      <div class="glass-card method-card reveal delay-1">
+        <div class="method-num">02 / CONNECT</div>
+        <p>For each port in range, a TCP connect-scan attempts a full three-way handshake using Python's <code>socket</code> module — no packet crafting or exploitation involved.</p>
+      </div>
+      <div class="glass-card method-card reveal delay-2">
+        <div class="method-num">03 / REPORT</div>
+        <p>Successful connections are marked open and labeled with their common service name, then logged to a local SQLite database for your history.</p>
+      </div>
+    </div>
+
+    <div class="section-head center reveal">
+      <div class="section-kicker">responsible use</div>
+      <h2 class="section-title">Ethics &amp; Legal Guidelines</h2>
+    </div>
+
+    <div class="glass-card ethics-card reveal" style="margin-bottom:20px;">
+      <i class="fa-solid fa-scale-balanced"></i>
+      <div>
+        <h3>Scan only what you're authorized to scan</h3>
+        <p>Port scanning systems you don't own or lack written permission to test can violate laws such as the U.S. Computer Fraud and Abuse Act, the UK Computer Misuse Act, and equivalent statutes elsewhere. Always obtain explicit authorization before testing any system that isn't yours.</p>
+        <ul class="ethics-list">
+          <li><i class="fa-solid fa-check"></i> Your own devices, home lab, or personal VPS</li>
+          <li><i class="fa-solid fa-check"></i> Systems covered by a signed penetration-testing agreement</li>
+          <li><i class="fa-solid fa-check"></i> Purpose-built practice targets (e.g. dedicated CTF ranges)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="glass-card ethics-card reveal delay-1">
+      <i class="fa-solid fa-graduation-cap"></i>
+      <div>
+        <h3>Built for learning, not offense</h3>
+        <p>This project intentionally implements only a basic TCP connect scan and stops there — no service exploitation, no vulnerability scanning, no payload delivery. It's meant to be a clear, readable codebase for students studying networking, Flask, or full-stack development.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
