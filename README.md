@@ -78,7 +78,7 @@ This project was built for learning **Cyber Security**, **Networking**, and **Py
 
 ### 🏠 Home Page
 
-![Home Page](<img src="img1.1.png" width="100%" alt="Pick My AI Homepage">)
+<img src="img.1.1.png" width="100%" alt=" Homepage">
 
 ---
 
