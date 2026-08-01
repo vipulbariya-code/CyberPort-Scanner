@@ -78,7 +78,7 @@ This project was built for learning **Cyber Security**, **Networking**, and **Py
 
 ### 🏠 Home Page
 
-![Home Page](https://raw.githubusercontent.com/vipulbariya-code/CyberPort-Scanner/main/screenshots/img1.1.png)
+![Home Page](<img src="img1.1.png" width="100%" alt="Pick My AI Homepage">)
 
 ---
 
