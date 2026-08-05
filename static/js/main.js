@@ -45,11 +45,15 @@ const Toast = {
     const icons = { success: 'fa-circle-check', error: 'fa-triangle-exclamation', info: 'fa-terminal' };
     const el = document.createElement('div');
     el.className = `toast ${type}`;
-    el.innerHTML = `
-      <i class="fa-solid ${icons[type] || icons.info} toast-icon"></i>
-      <span>${message}</span>
-      <button class="toast-close" aria-label="Dismiss notification"><i class="fa-solid fa-xmark"></i></button>
-    `;
+    const icon = document.createElement('i');
+    icon.className = `fa-solid ${icons[type] || icons.info} toast-icon`;
+    const text = document.createElement('span');
+    text.textContent = message;
+    const close = document.createElement('button');
+    close.className = 'toast-close';
+    close.setAttribute('aria-label', 'Dismiss notification');
+    close.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    el.append(icon, text, close);
     el.querySelector('.toast-close').addEventListener('click', () => this.dismiss(el));
     this.container.appendChild(el);
 

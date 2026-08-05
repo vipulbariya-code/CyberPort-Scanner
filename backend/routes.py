@@ -14,14 +14,15 @@ import io
 import os
 import threading
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from flask import (
     Blueprint, render_template, request, jsonify, send_file, current_app, abort
 )
 
 from scanner import (
-    PortScanner, validate_target, validate_port_range, resolve_target, ValidationError
+    PortScanner, validate_target, validate_port_range, resolve_target,
+    validate_resolved_target, ValidationError
 )
 
 main_bp = Blueprint("main", __name__)
@@ -30,6 +31,18 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 # In-memory job registry: { job_id: {status, scanned, total, open_count, result, error} }
 SCAN_JOBS = {}
 JOBS_LOCK = threading.Lock()
+JOB_TTL = timedelta(hours=1)
+
+
+def _prune_jobs():
+    """Drop terminal jobs after a short retention period."""
+    now = datetime.utcnow()
+    expired = [
+        job_id for job_id, job in SCAN_JOBS.items()
+        if job.get("finished_at") and now - job["finished_at"] > JOB_TTL
+    ]
+    for job_id in expired:
+        SCAN_JOBS.pop(job_id, None)
 
 
 # =====================================================================
@@ -88,9 +101,16 @@ def _run_scan_job(job_id, app, target_ip, start_port, end_port, original_target)
 
         with JOBS_LOCK:
             SCAN_JOBS[job_id]["scanner_ref"] = scanner
+            if SCAN_JOBS[job_id]["status"] == "cancelled":
+                scanner.cancel()
 
         try:
             result = scanner.run(progress_callback=on_progress)
+            with JOBS_LOCK:
+                cancelled = SCAN_JOBS.get(job_id, {}).get("status") == "cancelled"
+            if cancelled:
+                return
+
             scan_id = db.create_scan(
                 target=original_target,
                 resolved_ip=target_ip,
@@ -103,11 +123,14 @@ def _run_scan_job(job_id, app, target_ip, start_port, end_port, original_target)
             )
             with JOBS_LOCK:
                 SCAN_JOBS[job_id].update(
-                    status="completed", result=result, db_scan_id=scan_id
+                    status="completed", result=result, db_scan_id=scan_id,
+                    finished_at=datetime.utcnow()
                 )
         except Exception as exc:  # pragma: no cover - defensive
             with JOBS_LOCK:
-                SCAN_JOBS[job_id].update(status="error", error=str(exc))
+                SCAN_JOBS[job_id].update(
+                    status="error", error=str(exc), finished_at=datetime.utcnow()
+                )
 
 
 @api_bp.route("/scan/start", methods=["POST"])
@@ -116,16 +139,21 @@ def start_scan():
     cfg = current_app.config
 
     try:
+        if data.get("authorized") is not True:
+            raise ValidationError("Confirm that you are authorized to scan this target.")
         target = validate_target(data.get("target", ""))
         start_port, end_port = validate_port_range(
             data.get("start_port"), data.get("end_port"), max_range=cfg["MAX_PORT_RANGE"]
         )
-        resolved_ip = resolve_target(target)
+        resolved_ip = validate_resolved_target(
+            resolve_target(target), private_only=cfg["PRIVATE_TARGETS_ONLY"]
+        )
     except ValidationError as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
     job_id = str(uuid.uuid4())
     with JOBS_LOCK:
+        _prune_jobs()
         SCAN_JOBS[job_id] = {
             "status": "running",
             "scanned": 0,
@@ -186,7 +214,7 @@ def cancel_scan(job_id):
         scanner_ref = job.get("scanner_ref")
         if scanner_ref:
             scanner_ref.cancel()
-        job["status"] = "cancelled"
+        job.update(status="cancelled", finished_at=datetime.utcnow())
     return jsonify({"success": True})
 
 

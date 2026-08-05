@@ -113,6 +113,18 @@ def resolve_target(target: str) -> str:
         raise ValidationError(f"Could not resolve host '{target}'. Check the address and try again.")
 
 
+def validate_resolved_target(address: str, private_only: bool = True) -> str:
+    """Reject public destinations for the unauthenticated web interface."""
+    ip = ipaddress.ip_address(address)
+    if private_only and not (ip.is_private or ip.is_loopback):
+        raise ValidationError(
+            "This public scanner accepts only private-network or localhost targets."
+        )
+    if ip.is_unspecified or ip.is_multicast or ip.is_reserved:
+        raise ValidationError("This target address is not allowed.")
+    return str(ip)
+
+
 class PortScanner:
     """
     Multi-threaded TCP connect-scan engine.
@@ -167,6 +179,8 @@ class PortScanner:
             future_to_port = {executor.submit(self._scan_port, p): p for p in ports}
             for future in as_completed(future_to_port):
                 if self._cancelled:
+                    for pending in future_to_port:
+                        pending.cancel()
                     break
                 port = future_to_port[future]
                 is_open = future.result()

@@ -176,6 +176,8 @@ Run Application
 ```bash
 cd backend
 
+set FLASK_ENV=development
+set SECRET_KEY=replace-with-a-random-local-secret
 python app.py
 ```
 
@@ -211,8 +213,17 @@ http://127.0.0.1:5000
 - No Exploitation
 - No Payload Delivery
 - Rate Limited
+- Private-network and localhost targets only in the public web UI
 - Input Validation
 - Educational Purpose Only
+
+## Deployment configuration
+
+Set `SECRET_KEY` to a long random value in every production environment. The
+application deliberately refuses to start in production without it. Set
+`DATABASE_PATH` to a path on a mounted persistent disk if scan history must
+survive restarts. The default local SQLite file is not durable on ephemeral
+hosting filesystems.
 
 ---
 

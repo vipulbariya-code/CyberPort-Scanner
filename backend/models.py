@@ -26,9 +26,13 @@ class Database:
     @contextmanager
     def get_connection(self):
         """Context-managed connection ensures commits/closes are never skipped."""
-        conn = sqlite3.connect(self.db_path)
+        # WAL and a short busy timeout reduce transient "database is locked"
+        # errors while the web process and background scan thread overlap.
+        conn = sqlite3.connect(self.db_path, timeout=10)
         conn.row_factory = sqlite3.Row
         conn.execute("PRAGMA foreign_keys = ON")
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA busy_timeout = 10000")
         try:
             yield conn
             conn.commit()
@@ -106,6 +110,7 @@ class Database:
             return self._row_to_dict(row) if row else None
 
     def list_scans(self, page=1, page_size=10, search=None):
+        page = max(1, page)
         offset = (page - 1) * page_size
         with self.get_connection() as conn:
             if search:

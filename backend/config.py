@@ -15,11 +15,14 @@ class Config:
     """Base configuration shared across all environments."""
 
     # --- Core Flask settings ---
-    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-change-this-in-production")
+    SECRET_KEY = os.environ.get("SECRET_KEY")
     JSON_SORT_KEYS = False
 
     # --- Database ---
-    DATABASE_PATH = os.path.join(BASE_DIR, "database", "cyberport.db")
+    # Set DATABASE_PATH to a mounted persistent volume when deploying.
+    DATABASE_PATH = os.environ.get(
+        "DATABASE_PATH", os.path.join(BASE_DIR, "database", "cyberport.db")
+    )
 
     # --- Exports ---
     EXPORTS_DIR = os.path.join(BASE_DIR, "exports")
@@ -32,6 +35,9 @@ class Config:
     MAX_PORT = 65535
     SOCKET_TIMEOUT = 0.6           # seconds, per-port connect timeout
     MAX_THREADS = 100              # concurrent worker threads for scanning
+    # The public web UI is intentionally limited to local/lab networks.
+    # Set this to False only for a separately authenticated deployment.
+    PRIVATE_TARGETS_ONLY = os.environ.get("PRIVATE_TARGETS_ONLY", "true").lower() == "true"
 
     # --- Rate limiting ---
     RATE_LIMIT_DEFAULT = "60 per hour"
@@ -43,6 +49,7 @@ class Config:
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    SECRET_KEY = os.environ.get("SECRET_KEY", "dev-only-not-for-production")
 
 
 class ProductionConfig(Config):
@@ -52,5 +59,5 @@ class ProductionConfig(Config):
 config_map = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
-    "default": DevelopmentConfig,
+    "default": ProductionConfig,
 }

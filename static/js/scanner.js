@@ -13,6 +13,7 @@
   const targetError = document.getElementById('target-error');
   const portError = document.getElementById('port-error');
   const scanBtn = document.getElementById('scan-btn');
+  const authorizationInput = document.getElementById('authorization-input');
 
   const progressWrap = document.getElementById('scan-progress-wrap');
   const progressFill = document.getElementById('progress-fill');
@@ -93,6 +94,10 @@
     setFieldError(targetInput, targetError, targetErrMsg);
     setFieldError(endPortInput, portError, portErrMsg);
     if (targetErrMsg || portErrMsg) return;
+    if (!authorizationInput.checked) {
+      Toast.show('Confirm that you are authorized to scan this target.', 'error');
+      return;
+    }
 
     scanBtn.disabled = true;
     scanBtn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Initializing...';
@@ -107,6 +112,7 @@
           target: targetInput.value.trim(),
           start_port: Number(startPortInput.value),
           end_port: Number(endPortInput.value),
+          authorized: authorizationInput.checked,
         }),
       });
       scanStartTime = Date.now();
@@ -143,6 +149,12 @@
           clearInterval(pollTimer);
           clearInterval(elapsedTimer);
           Toast.show(res.error || 'Scan failed.', 'error');
+          resetScanButton();
+          scanPanel.classList.remove('scanning');
+        } else if (res.status === 'cancelled') {
+          clearInterval(pollTimer);
+          clearInterval(elapsedTimer);
+          Toast.show('Scan cancelled.', 'info');
           resetScanButton();
           scanPanel.classList.remove('scanning');
         }

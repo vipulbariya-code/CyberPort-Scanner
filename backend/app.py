@@ -15,14 +15,20 @@ from flask import Flask
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
-from config import config_map, Config
+from config import config_map, ProductionConfig
 from models import Database
 from routes import main_bp, api_bp
 
 
 def create_app(env=None):
-    env = env or os.environ.get("FLASK_ENV", "production")
+    # Direct local execution is developer-friendly; WSGI deployments default to
+    # production and therefore still require an explicit production secret.
+    default_env = "development" if __name__ == "__main__" else "production"
+    env = env or os.environ.get("FLASK_ENV", default_env)
     app_config = config_map.get(env, config_map["default"])
+
+    if app_config is ProductionConfig and not app_config.SECRET_KEY:
+        raise RuntimeError("SECRET_KEY must be set when FLASK_ENV=production.")
 
     app = Flask(
         __name__,
@@ -38,10 +44,10 @@ def create_app(env=None):
     limiter = Limiter(
         get_remote_address,
         app=app,
-        default_limits=[Config.RATE_LIMIT_DEFAULT],
+        default_limits=[app_config.RATE_LIMIT_DEFAULT],
         storage_uri="memory://",
     )
-    limiter.limit(Config.RATE_LIMIT_SCAN)(api_bp)
+    limiter.limit(app_config.RATE_LIMIT_SCAN)(api_bp)
 
     # --- Blueprints ---
     app.register_blueprint(main_bp)
