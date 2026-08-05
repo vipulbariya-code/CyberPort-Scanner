@@ -49,7 +49,16 @@
         <a href="/history" class="nav-link">History</a>
         <a href="/about" class="nav-link">About</a>
         <a href="/contact" class="nav-link">Contact</a>
-        <a href="/dashboard" class="nav-cta">Launch Scanner</a>
+        {% if session.get('user_id') %}
+          <span class="nav-user">{{ session.get('username') }}</span>
+          <form action="{{ url_for('main.logout') }}" method="post" class="nav-logout-form">
+            <button type="submit" class="nav-link nav-logout">Logout</button>
+          </form>
+          <a href="/dashboard" class="nav-cta">Launch Scanner</a>
+        {% else %}
+          <a href="{{ url_for('main.login') }}" class="nav-link">Login</a>
+          <a href="{{ url_for('main.signup') }}" class="nav-cta">Sign Up</a>
+        {% endif %}
       </nav>
 
       <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu">
@@ -59,6 +68,15 @@
   </header>
 
   <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </main>
 

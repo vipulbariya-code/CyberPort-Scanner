@@ -145,6 +145,17 @@
 .form-input:focus { outline: none; border-color: var(--signal-green); box-shadow: 0 0 0 3px rgba(0,255,157,0.12); }
 .form-input.invalid { border-color: var(--alert-magenta); }
 .form-error { font-family: var(--font-mono); font-size: 0.72rem; color: var(--alert-magenta); min-height: 16px; }
+.auth-page { min-height: calc(100vh - var(--header-h)); display: grid; place-items: center; padding: 56px 20px; }
+.auth-card { width: min(100%, 460px); padding: 34px; }
+.auth-card h1 { font-family: var(--font-display); font-size: 2rem; margin: 10px 0; }
+.auth-card p { color: var(--text-secondary); margin-bottom: 26px; }
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.auth-footer { text-align: center; color: var(--text-secondary); font-size: .9rem; margin-top: 22px; }
+.auth-footer a { color: var(--signal-green); }
+.flash-stack { position: fixed; z-index: 20; top: calc(var(--header-h) + 16px); left: 50%; transform: translateX(-50%); width: min(92vw, 520px); }
+.flash-message { padding: 13px 16px; border-radius: 9px; border: 1px solid var(--glass-border-strong); background: rgba(9, 20, 26, .95); box-shadow: var(--shadow-lg); text-align: center; }
+.flash-message.success { border-color: rgba(0,255,157,.45); color: var(--signal-green); }
+.flash-message.error { border-color: rgba(255,75,138,.55); color: #ff9abd; }
 .presets-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
 .preset-chip {
   padding: 6px 14px; border-radius: 999px; font-family: var(--font-mono); font-size: 0.72rem;

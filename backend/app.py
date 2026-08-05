@@ -36,6 +36,11 @@ def create_app(env=None):
         static_folder=os.path.join(os.path.dirname(os.path.dirname(__file__)), "static"),
     )
     app.config.from_object(app_config)
+    app.config.update(
+        SESSION_COOKIE_HTTPONLY=True,
+        SESSION_COOKIE_SAMESITE="Lax",
+        SESSION_COOKIE_SECURE=not app.config["DEBUG"],
+    )
 
     # --- Database ---
     app.db = Database(app_config.DATABASE_PATH)

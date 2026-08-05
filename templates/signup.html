@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Create Account — CyberPort Scanner{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="glass-card auth-card reveal in-view">
+    <div class="section-kicker">get started</div>
+    <h1>Create your account</h1>
+    <p>Save your scans privately and access the dashboard securely.</p>
+    <form method="post" class="auth-form">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input class="form-input" type="text" id="username" name="username" autocomplete="username" minlength="3" maxlength="30" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input class="form-input" type="email" id="email" name="email" autocomplete="email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input class="form-input" type="password" id="password" name="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <div class="form-group">
+        <label for="confirm-password">Confirm password</label>
+        <input class="form-input" type="password" id="confirm-password" name="confirm_password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+    </form>
+    <div class="auth-footer">Already have an account? <a href="{{ url_for('main.login') }}">Log in</a></div>
+  </div>
+</section>
+{% endblock %}

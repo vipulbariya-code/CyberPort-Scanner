@@ -46,6 +46,17 @@ class Database:
         with self.get_connection() as conn:
             conn.execute(
                 """
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                    email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                    password_hash TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+                """
+            )
+            conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS scans (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     target TEXT NOT NULL,
@@ -62,14 +73,35 @@ class Database:
                 )
                 """
             )
+            scan_columns = {
+                row["name"] for row in conn.execute("PRAGMA table_info(scans)").fetchall()
+            }
+            if "user_id" not in scan_columns:
+                conn.execute("ALTER TABLE scans ADD COLUMN user_id INTEGER REFERENCES users(id)")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_scans_created_at ON scans (created_at DESC)"
             )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_scans_user_id ON scans (user_id)")
 
     # ---------------------------------------------------------------
     # Write operations
     # ---------------------------------------------------------------
-    def create_scan(self, target, resolved_ip, start_port, end_port,
+    def create_user(self, username, email, password_hash):
+        with self.get_connection() as conn:
+            cursor = conn.execute(
+                "INSERT INTO users (username, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
+                (username, email, password_hash, datetime.utcnow().isoformat()),
+            )
+            return cursor.lastrowid
+
+    def get_user_by_email(self, email):
+        with self.get_connection() as conn:
+            row = conn.execute(
+                "SELECT id, username, email, password_hash FROM users WHERE email = ?", (email,)
+            ).fetchone()
+            return dict(row) if row else None
+
+    def create_scan(self, user_id, target, resolved_ip, start_port, end_port,
                      total_ports_scanned, open_ports, duration_seconds,
                      status="completed"):
         open_ports_count = len(open_ports)
@@ -78,13 +110,13 @@ class Database:
             cursor = conn.execute(
                 """
                 INSERT INTO scans (
-                    target, resolved_ip, start_port, end_port,
+                    user_id, target, resolved_ip, start_port, end_port,
                     total_ports_scanned, open_ports_count, closed_ports_count,
                     duration_seconds, open_ports_json, status, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    target, resolved_ip, start_port, end_port,
+                    user_id, target, resolved_ip, start_port, end_port,
                     total_ports_scanned, open_ports_count, closed_ports_count,
                     duration_seconds, json.dumps(open_ports), status,
                     datetime.utcnow().isoformat(),
@@ -92,24 +124,26 @@ class Database:
             )
             return cursor.lastrowid
 
-    def delete_scan(self, scan_id):
+    def delete_scan(self, scan_id, user_id):
         with self.get_connection() as conn:
-            cursor = conn.execute("DELETE FROM scans WHERE id = ?", (scan_id,))
+            cursor = conn.execute("DELETE FROM scans WHERE id = ? AND user_id = ?", (scan_id, user_id))
             return cursor.rowcount > 0
 
-    def clear_history(self):
+    def clear_history(self, user_id):
         with self.get_connection() as conn:
-            conn.execute("DELETE FROM scans")
+            conn.execute("DELETE FROM scans WHERE user_id = ?", (user_id,))
 
     # ---------------------------------------------------------------
     # Read operations
     # ---------------------------------------------------------------
-    def get_scan(self, scan_id):
+    def get_scan(self, scan_id, user_id):
         with self.get_connection() as conn:
-            row = conn.execute("SELECT * FROM scans WHERE id = ?", (scan_id,)).fetchone()
+            row = conn.execute(
+                "SELECT * FROM scans WHERE id = ? AND user_id = ?", (scan_id, user_id)
+            ).fetchone()
             return self._row_to_dict(row) if row else None
 
-    def list_scans(self, page=1, page_size=10, search=None):
+    def list_scans(self, user_id, page=1, page_size=10, search=None):
         page = max(1, page)
         offset = (page - 1) * page_size
         with self.get_connection() as conn:
@@ -118,21 +152,21 @@ class Database:
                 rows = conn.execute(
                     """
                     SELECT * FROM scans
-                    WHERE target LIKE ? OR resolved_ip LIKE ?
+                    WHERE user_id = ? AND (target LIKE ? OR resolved_ip LIKE ?)
                     ORDER BY created_at DESC LIMIT ? OFFSET ?
                     """,
-                    (like, like, page_size, offset),
+                    (user_id, like, like, page_size, offset),
                 ).fetchall()
                 total = conn.execute(
-                    "SELECT COUNT(*) FROM scans WHERE target LIKE ? OR resolved_ip LIKE ?",
-                    (like, like),
+                    "SELECT COUNT(*) FROM scans WHERE user_id = ? AND (target LIKE ? OR resolved_ip LIKE ?)",
+                    (user_id, like, like),
                 ).fetchone()[0]
             else:
                 rows = conn.execute(
-                    "SELECT * FROM scans ORDER BY created_at DESC LIMIT ? OFFSET ?",
-                    (page_size, offset),
+                    "SELECT * FROM scans WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?",
+                    (user_id, page_size, offset),
                 ).fetchall()
-                total = conn.execute("SELECT COUNT(*) FROM scans").fetchone()[0]
+                total = conn.execute("SELECT COUNT(*) FROM scans WHERE user_id = ?", (user_id,)).fetchone()[0]
 
             return {
                 "items": [self._row_to_dict(r) for r in rows],
@@ -142,20 +176,20 @@ class Database:
                 "total_pages": max(1, (total + page_size - 1) // page_size),
             }
 
-    def get_dashboard_stats(self):
+    def get_dashboard_stats(self, user_id):
         with self.get_connection() as conn:
-            total_scans = conn.execute("SELECT COUNT(*) FROM scans").fetchone()[0]
+            total_scans = conn.execute("SELECT COUNT(*) FROM scans WHERE user_id = ?", (user_id,)).fetchone()[0]
             open_sum = conn.execute(
-                "SELECT COALESCE(SUM(open_ports_count), 0) FROM scans"
+                "SELECT COALESCE(SUM(open_ports_count), 0) FROM scans WHERE user_id = ?", (user_id,)
             ).fetchone()[0]
             closed_sum = conn.execute(
-                "SELECT COALESCE(SUM(closed_ports_count), 0) FROM scans"
+                "SELECT COALESCE(SUM(closed_ports_count), 0) FROM scans WHERE user_id = ?", (user_id,)
             ).fetchone()[0]
             last_scan = conn.execute(
-                "SELECT * FROM scans ORDER BY created_at DESC LIMIT 1"
+                "SELECT * FROM scans WHERE user_id = ? ORDER BY created_at DESC LIMIT 1", (user_id,)
             ).fetchone()
             avg_duration = conn.execute(
-                "SELECT COALESCE(AVG(duration_seconds), 0) FROM scans"
+                "SELECT COALESCE(AVG(duration_seconds), 0) FROM scans WHERE user_id = ?", (user_id,)
             ).fetchone()[0]
 
             return {

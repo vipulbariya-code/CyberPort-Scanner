@@ -14,11 +14,16 @@ import io
 import os
 import threading
 import uuid
+import re
+import sqlite3
+from functools import wraps
 from datetime import datetime, timedelta
 
 from flask import (
-    Blueprint, render_template, request, jsonify, send_file, current_app, abort
+    Blueprint, render_template, request, jsonify, send_file, current_app, abort,
+    redirect, url_for, flash, session
 )
+from werkzeug.security import generate_password_hash, check_password_hash
 
 from scanner import (
     PortScanner, validate_target, validate_port_range, resolve_target,
@@ -32,6 +37,25 @@ api_bp = Blueprint("api", __name__, url_prefix="/api")
 SCAN_JOBS = {}
 JOBS_LOCK = threading.Lock()
 JOB_TTL = timedelta(hours=1)
+
+
+def page_login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("user_id"):
+            flash("Please log in to access the scanner.", "error")
+            return redirect(url_for("main.login", next=request.path))
+        return view(*args, **kwargs)
+    return wrapped
+
+
+def api_login_required(view):
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if not session.get("user_id"):
+            return jsonify({"success": False, "error": "Authentication required."}), 401
+        return view(*args, **kwargs)
+    return wrapped
 
 
 def _prune_jobs():
@@ -54,11 +78,13 @@ def home():
 
 
 @main_bp.route("/dashboard")
+@page_login_required
 def dashboard():
     return render_template("dashboard.html")
 
 
 @main_bp.route("/history")
+@page_login_required
 def history():
     return render_template("history.html")
 
@@ -73,6 +99,65 @@ def contact():
     return render_template("contact.html")
 
 
+@main_bp.route("/signup", methods=["GET", "POST"])
+def signup():
+    if session.get("user_id"):
+        return redirect(url_for("main.dashboard"))
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
+        if not re.fullmatch(r"[A-Za-z0-9_]{3,30}", username):
+            flash("Username must be 3–30 letters, numbers, or underscores.", "error")
+        elif not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email):
+            flash("Enter a valid email address.", "error")
+        elif len(password) < 8:
+            flash("Password must be at least 8 characters.", "error")
+        elif password != confirm_password:
+            flash("Passwords do not match.", "error")
+        else:
+            try:
+                user_id = current_app.db.create_user(
+                    username, email, generate_password_hash(password)
+                )
+            except sqlite3.IntegrityError:
+                flash("That username or email is already registered.", "error")
+            else:
+                session.clear()
+                session["user_id"] = user_id
+                session["username"] = username
+                flash("Account created. Welcome!", "success")
+                return redirect(url_for("main.dashboard"))
+    return render_template("signup.html")
+
+
+@main_bp.route("/login", methods=["GET", "POST"])
+def login():
+    if session.get("user_id"):
+        return redirect(url_for("main.dashboard"))
+    if request.method == "POST":
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        user = current_app.db.get_user_by_email(email)
+        if not user or not check_password_hash(user["password_hash"], password):
+            flash("Invalid email or password.", "error")
+        else:
+            session.clear()
+            session["user_id"] = user["id"]
+            session["username"] = user["username"]
+            next_url = request.args.get("next", "")
+            return redirect(next_url if next_url.startswith("/") else url_for("main.dashboard"))
+    return render_template("login.html")
+
+
+@main_bp.route("/logout", methods=["POST"])
+def logout():
+    session.clear()
+    flash("You have been logged out.", "success")
+    return redirect(url_for("main.home"))
+
+
 @main_bp.app_errorhandler(404)
 def not_found(e):
     return render_template("404.html"), 404
@@ -81,7 +166,7 @@ def not_found(e):
 # =====================================================================
 # API routes
 # =====================================================================
-def _run_scan_job(job_id, app, target_ip, start_port, end_port, original_target):
+def _run_scan_job(job_id, app, target_ip, start_port, end_port, original_target, user_id):
     """Executed in a background thread."""
     with app.app_context():
         db = current_app.db
@@ -112,7 +197,7 @@ def _run_scan_job(job_id, app, target_ip, start_port, end_port, original_target)
                 return
 
             scan_id = db.create_scan(
-                target=original_target,
+                user_id=user_id, target=original_target,
                 resolved_ip=target_ip,
                 start_port=start_port,
                 end_port=end_port,
@@ -134,6 +219,7 @@ def _run_scan_job(job_id, app, target_ip, start_port, end_port, original_target)
 
 
 @api_bp.route("/scan/start", methods=["POST"])
+@api_login_required
 def start_scan():
     data = request.get_json(silent=True) or {}
     cfg = current_app.config
@@ -161,13 +247,14 @@ def start_scan():
             "open_count": 0,
             "target": target,
             "resolved_ip": resolved_ip,
+            "user_id": session["user_id"],
             "started_at": datetime.utcnow().isoformat(),
         }
 
     app = current_app._get_current_object()
     thread = threading.Thread(
         target=_run_scan_job,
-        args=(job_id, app, resolved_ip, start_port, end_port, target),
+        args=(job_id, app, resolved_ip, start_port, end_port, target, session["user_id"]),
         daemon=True,
     )
     thread.start()
@@ -181,10 +268,11 @@ def start_scan():
 
 
 @api_bp.route("/scan/status/<job_id>")
+@api_login_required
 def scan_status(job_id):
     with JOBS_LOCK:
         job = SCAN_JOBS.get(job_id)
-        if not job:
+        if not job or job.get("user_id") != session["user_id"]:
             return jsonify({"success": False, "error": "Job not found."}), 404
 
         payload = {
@@ -206,10 +294,11 @@ def scan_status(job_id):
 
 
 @api_bp.route("/scan/cancel/<job_id>", methods=["POST"])
+@api_login_required
 def cancel_scan(job_id):
     with JOBS_LOCK:
         job = SCAN_JOBS.get(job_id)
-        if not job:
+        if not job or job.get("user_id") != session["user_id"]:
             return jsonify({"success": False, "error": "Job not found."}), 404
         scanner_ref = job.get("scanner_ref")
         if scanner_ref:
@@ -219,36 +308,41 @@ def cancel_scan(job_id):
 
 
 @api_bp.route("/stats")
+@api_login_required
 def stats():
-    return jsonify({"success": True, "data": current_app.db.get_dashboard_stats()})
+    return jsonify({"success": True, "data": current_app.db.get_dashboard_stats(session["user_id"])})
 
 
 @api_bp.route("/history")
+@api_login_required
 def get_history():
     page = request.args.get("page", 1, type=int)
     search = request.args.get("search", "").strip() or None
     page_size = current_app.config["HISTORY_PAGE_SIZE"]
-    data = current_app.db.list_scans(page=page, page_size=page_size, search=search)
+    data = current_app.db.list_scans(session["user_id"], page=page, page_size=page_size, search=search)
     return jsonify({"success": True, "data": data})
 
 
 @api_bp.route("/history/<int:scan_id>", methods=["DELETE"])
+@api_login_required
 def delete_history_item(scan_id):
-    ok = current_app.db.delete_scan(scan_id)
+    ok = current_app.db.delete_scan(scan_id, session["user_id"])
     if not ok:
         return jsonify({"success": False, "error": "Scan not found."}), 404
     return jsonify({"success": True})
 
 
 @api_bp.route("/history", methods=["DELETE"])
+@api_login_required
 def clear_history():
-    current_app.db.clear_history()
+    current_app.db.clear_history(session["user_id"])
     return jsonify({"success": True})
 
 
 @api_bp.route("/history/<int:scan_id>/export")
+@api_login_required
 def export_csv(scan_id):
-    scan = current_app.db.get_scan(scan_id)
+    scan = current_app.db.get_scan(scan_id, session["user_id"])
     if not scan:
         abort(404)
 

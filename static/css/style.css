@@ -189,6 +189,9 @@ main { position: relative; z-index: 1; min-height: calc(100vh - var(--header-h))
 .brand-port { color: var(--text-primary); }
 
 .nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-user { color: var(--signal-cyan); font-family: var(--font-mono); font-size: .75rem; }
+.nav-logout-form { margin: 0; }
+.nav-logout { background: transparent; border: 0; cursor: pointer; padding: 0; font: inherit; }
 .nav-link {
   position: relative;
   padding: 8px 16px;

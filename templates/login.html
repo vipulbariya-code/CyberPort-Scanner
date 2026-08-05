@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Login — CyberPort Scanner{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="glass-card auth-card reveal in-view">
+    <div class="section-kicker">secure access</div>
+    <h1>Welcome back</h1>
+    <p>Log in to access your scanner dashboard and scan history.</p>
+    <form method="post" class="auth-form">
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input class="form-input" type="email" id="email" name="email" autocomplete="email" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input class="form-input" type="password" id="password" name="password" autocomplete="current-password" required>
+      </div>
+      <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
+    </form>
+    <div class="auth-footer">New here? <a href="{{ url_for('main.signup') }}">Create an account</a></div>
+  </div>
+</section>
+{% endblock %}
