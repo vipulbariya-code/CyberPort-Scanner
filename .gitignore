@@ -6,8 +6,11 @@ env/
 *.egg-info/
 .env
 database/*.db
+database/*.db-wal
+database/*.db-shm
 exports/*.csv
 .DS_Store
 *.log
 instance/
 .pytest_cache/
+

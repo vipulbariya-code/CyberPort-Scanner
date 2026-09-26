@@ -30,6 +30,9 @@
     Chart.defaults.color = '#8fb5ac';
     Chart.defaults.font.family = "'JetBrains Mono', monospace";
 
+    const existingChart = Chart.getChart(canvas);
+    if (existingChart) existingChart.destroy();
+
     new Chart(canvas, {
       type: 'doughnut',
       data: {

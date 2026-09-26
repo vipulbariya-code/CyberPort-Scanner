@@ -13,6 +13,7 @@
   const targetError = document.getElementById('target-error');
   const portError = document.getElementById('port-error');
   const scanBtn = document.getElementById('scan-btn');
+  const cancelBtn = document.getElementById('cancel-btn');
   const authorizationInput = document.getElementById('authorization-input');
 
   const progressWrap = document.getElementById('scan-progress-wrap');
@@ -26,18 +27,18 @@
   const resultsBody = document.getElementById('results-body');
   const resultsSearch = document.getElementById('results-search-input');
   const resultsEmpty = document.getElementById('results-empty');
+  const resultsEmptyMsg = document.getElementById('results-empty-msg');
   const resultsCount = document.getElementById('results-count');
   const btnExport = document.getElementById('btn-export-csv');
   const btnCopy = document.getElementById('btn-copy-results');
-  const filterTabs = document.querySelectorAll('.filter-tab');
 
   let currentResults = [];
-  let currentFilter = 'all';
   let sortState = { key: 'port', dir: 1 };
   let pollTimer = null;
   let elapsedTimer = null;
   let scanStartTime = null;
   let lastDbScanId = null;
+  let currentJobId = null;
 
   // -------------------------------------------------------------
   // Validation
@@ -46,9 +47,15 @@
   const HOSTNAME_RE = /^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$/;
 
   function validateTarget(value) {
-    const v = value.trim();
+    let v = (value || '').trim();
     if (!v) return 'Target is required.';
-    if (!IPV4_RE.test(v) && !HOSTNAME_RE.test(v)) return 'Enter a valid IPv4 address or domain name.';
+    if (v.toLowerCase().startsWith('http://')) v = v.slice(7);
+    if (v.toLowerCase().startsWith('https://')) v = v.slice(8);
+    v = v.split('/')[0].split('?')[0].split(':')[0].trim();
+    if (!v) return 'Target is required.';
+    if (!IPV4_RE.test(v) && !HOSTNAME_RE.test(v)) {
+      return 'Enter a valid IPv4 address or domain name.';
+    }
     return '';
   }
 
@@ -63,8 +70,8 @@
   }
 
   function setFieldError(el, errEl, msg) {
-    errEl.textContent = msg;
-    el.classList.toggle('invalid', Boolean(msg));
+    if (errEl) errEl.textContent = msg;
+    if (el) el.classList.toggle('invalid', Boolean(msg));
   }
 
   targetInput.addEventListener('input', () => setFieldError(targetInput, targetError, ''));
@@ -80,6 +87,7 @@
       const [s, e] = chip.dataset.range.split('-');
       startPortInput.value = s;
       endPortInput.value = e;
+      setFieldError(endPortInput, portError, '');
     });
   });
 
@@ -100,7 +108,12 @@
     }
 
     scanBtn.disabled = true;
-    scanBtn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Initializing...';
+    scanBtn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Scanning...';
+    if (cancelBtn) {
+      cancelBtn.style.display = 'inline-flex';
+      cancelBtn.disabled = false;
+      cancelBtn.innerHTML = '<i class="fa-solid fa-stop"></i> Cancel';
+    }
     scanPanel.classList.add('scanning');
     resultsPanel.style.display = 'none';
     currentResults = [];
@@ -115,6 +128,7 @@
           authorized: authorizationInput.checked,
         }),
       });
+      currentJobId = res.job_id;
       scanStartTime = Date.now();
       progressWrap.classList.add('active');
       startElapsedTimer();
@@ -122,10 +136,25 @@
       Toast.show(`Scan started on ${res.resolved_ip} — ${res.total_ports} ports queued.`, 'info');
     } catch (err) {
       Toast.show(err.message, 'error');
-      resetScanButton();
-      scanPanel.classList.remove('scanning');
+      stopScanningState();
     }
   });
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', async () => {
+      if (!currentJobId) return;
+      cancelBtn.disabled = true;
+      cancelBtn.innerHTML = '<i class="fa-solid fa-spinner spin"></i> Cancelling...';
+      try {
+        await apiRequest(`/api/scan/cancel/${currentJobId}`, { method: 'POST' });
+        Toast.show('Scan cancelled.', 'info');
+      } catch (err) {
+        Toast.show(err.message, 'error');
+      } finally {
+        stopScanningState();
+      }
+    });
+  }
 
   function startElapsedTimer() {
     clearInterval(elapsedTimer);
@@ -142,31 +171,42 @@
         const res = await apiRequest(`/api/scan/status/${jobId}`);
         updateProgress(res);
         if (res.status === 'completed') {
-          clearInterval(pollTimer);
-          clearInterval(elapsedTimer);
+          stopTimers();
           onScanComplete(res);
         } else if (res.status === 'error') {
-          clearInterval(pollTimer);
-          clearInterval(elapsedTimer);
+          stopTimers();
           Toast.show(res.error || 'Scan failed.', 'error');
-          resetScanButton();
-          scanPanel.classList.remove('scanning');
+          stopScanningState();
         } else if (res.status === 'cancelled') {
-          clearInterval(pollTimer);
-          clearInterval(elapsedTimer);
+          stopTimers();
           Toast.show('Scan cancelled.', 'info');
-          resetScanButton();
-          scanPanel.classList.remove('scanning');
+          stopScanningState();
         }
       } catch (err) {
-        clearInterval(pollTimer);
-        clearInterval(elapsedTimer);
+        stopTimers();
         Toast.show(err.message, 'error');
-        resetScanButton();
-        scanPanel.classList.remove('scanning');
+        stopScanningState();
       }
     }, 400);
   }
+
+  function stopTimers() {
+    if (pollTimer) clearInterval(pollTimer);
+    if (elapsedTimer) clearInterval(elapsedTimer);
+  }
+
+  function stopScanningState() {
+    stopTimers();
+    currentJobId = null;
+    scanBtn.disabled = false;
+    scanBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Start Scan';
+    if (cancelBtn) cancelBtn.style.display = 'none';
+    scanPanel.classList.remove('scanning');
+  }
+
+  // Cleanup timers on unload
+  window.addEventListener('beforeunload', stopTimers);
+  window.addEventListener('pagehide', stopTimers);
 
   function updateProgress(res) {
     const pct = res.total ? Math.min(100, Math.round((res.scanned / res.total) * 100)) : 0;
@@ -176,31 +216,19 @@
   }
 
   function onScanComplete(res) {
-    resetScanButton();
-    scanPanel.classList.remove('scanning');
+    stopScanningState();
     Toast.show(`Scan complete — ${res.result.open_ports.length} open port(s) found.`, 'success');
 
-    currentResults = buildFullResultSet(res.result);
+    currentResults = res.result.open_ports.map((p) => ({ ...p }));
     lastDbScanId = res.db_scan_id;
     resultsPanel.style.display = 'block';
-    btnExport.dataset.scanId = lastDbScanId;
+    if (btnExport) btnExport.dataset.scanId = lastDbScanId;
     renderResults();
     refreshDashboardStats();
   }
 
-  function buildFullResultSet(result) {
-    // Combine open ports (from scan) with a lightweight closed-port summary line.
-    const rows = result.open_ports.map((p) => ({ ...p }));
-    return rows;
-  }
-
-  function resetScanButton() {
-    scanBtn.disabled = false;
-    scanBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Start Scan';
-  }
-
   // -------------------------------------------------------------
-  // Results table: search, filter, sort
+  // Results table: search, sort
   // -------------------------------------------------------------
   function renderResults() {
     let rows = [...currentResults];
@@ -212,19 +240,42 @@
       );
     }
 
-    if (currentFilter === 'open') rows = rows.filter((r) => r.state === 'open');
-
     rows.sort((a, b) => {
-      const av = a[sortState.key], bv = b[sortState.key];
-      if (av < bv) return -1 * sortState.dir;
-      if (av > bv) return 1 * sortState.dir;
-      return 0;
+      let av = a[sortState.key];
+      let bv = b[sortState.key];
+      if (typeof av === 'string') {
+        return av.localeCompare(bv) * sortState.dir;
+      }
+      return (av - bv) * sortState.dir;
     });
 
-    resultsCount.textContent = `${rows.length} result${rows.length !== 1 ? 's' : ''}`;
+    // Update sort header icons
+    ['port', 'service', 'state'].forEach((col) => {
+      const icon = document.getElementById(`sort-icon-${col}`);
+      if (icon) {
+        if (sortState.key === col) {
+          icon.className = `fa-solid ${sortState.dir === 1 ? 'fa-sort-up' : 'fa-sort-down'}`;
+        } else {
+          icon.className = 'fa-solid fa-sort';
+        }
+      }
+    });
+
+    if (q) {
+      resultsCount.textContent = `Showing ${rows.length} of ${currentResults.length} open ports`;
+    } else {
+      resultsCount.textContent = `${rows.length} open port${rows.length !== 1 ? 's' : ''} found`;
+    }
 
     if (!rows.length) {
       resultsBody.innerHTML = '';
+      if (resultsEmptyMsg) {
+        if (currentResults.length === 0) {
+          resultsEmptyMsg.textContent = 'No open ports detected in this range (all scanned ports closed or filtered).';
+        } else {
+          resultsEmptyMsg.textContent = 'No open ports match your search query.';
+        }
+      }
       resultsEmpty.style.display = 'block';
       return;
     }
@@ -244,15 +295,6 @@
 
   resultsSearch.addEventListener('input', renderResults);
 
-  filterTabs.forEach((tab) => {
-    tab.addEventListener('click', () => {
-      filterTabs.forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      currentFilter = tab.dataset.filter;
-      renderResults();
-    });
-  });
-
   document.querySelectorAll('.results-table th[data-sort]').forEach((th) => {
     th.addEventListener('click', () => {
       const key = th.dataset.sort;
@@ -266,21 +308,46 @@
   // Export / Copy
   // -------------------------------------------------------------
   btnExport.addEventListener('click', () => {
-    if (!lastDbScanId) return;
+    if (!lastDbScanId) {
+      Toast.show('No scan record available for export.', 'info');
+      return;
+    }
     window.location.href = `/api/history/${lastDbScanId}/export`;
   });
 
   btnCopy.addEventListener('click', async () => {
     if (!currentResults.length) {
-      Toast.show('No results to copy yet.', 'info');
+      Toast.show('No open port results to copy.', 'info');
       return;
     }
+    const header = 'Port\tService\tState';
     const text = currentResults.map((r) => `${r.port}\t${r.service}\t${r.state}`).join('\n');
+    const fullText = `${header}\n${text}`;
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(fullText);
+        Toast.show('Results copied to clipboard.', 'success');
+        return;
+      } catch {
+        // Fallback below
+      }
+    }
+
+    // Fallback for older browsers or non-secure contexts
+    const ta = document.createElement('textarea');
+    ta.value = fullText;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
     try {
-      await navigator.clipboard.writeText(`Port\tService\tState\n${text}`);
+      document.execCommand('copy');
       Toast.show('Results copied to clipboard.', 'success');
     } catch {
       Toast.show('Could not copy — clipboard access denied.', 'error');
+    } finally {
+      ta.remove();
     }
   });
 

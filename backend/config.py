@@ -16,7 +16,7 @@ class Config:
 
     # --- Core Flask settings ---
     SECRET_KEY = os.environ.get("SECRET_KEY")
-    JSON_SORT_KEYS = False
+    PERMANENT_SESSION_LIFETIME = timedelta(days=7)
 
     # --- Database ---
     # Set DATABASE_PATH to a mounted persistent volume when deploying.
@@ -56,8 +56,19 @@ class ProductionConfig(Config):
     DEBUG = False
 
 
+class TestingConfig(Config):
+    TESTING = True
+    DEBUG = True
+    SECRET_KEY = "test-secret-key-for-testing-only"
+    DATABASE_PATH = ":memory:"
+    RATE_LIMIT_DEFAULT = "1000 per hour"
+    RATE_LIMIT_SCAN = "1000 per minute"
+
+
 config_map = {
     "development": DevelopmentConfig,
     "production": ProductionConfig,
-    "default": ProductionConfig,
+    "testing": TestingConfig,
+    "default": DevelopmentConfig,
 }
+

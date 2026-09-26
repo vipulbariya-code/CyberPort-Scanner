@@ -87,7 +87,10 @@
   }
 
   function formatDate(iso) {
-    const d = new Date(iso + 'Z');
+    if (!iso) return '—';
+    const s = iso.endsWith('Z') ? iso : iso + 'Z';
+    const d = new Date(s);
+    if (isNaN(d.getTime())) return iso;
     return d.toLocaleString(undefined, {
       month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });

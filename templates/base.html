@@ -6,9 +6,13 @@
   <title>{% block title %}CyberPort Scanner — Educational Network Port Scanner{% endblock %}</title>
   <meta name="description" content="{% block description %}CyberPort Scanner is a professional-grade network port scanner built for educational and authorized security testing. Learn TCP/IP scanning fundamentals safely.{% endblock %}">
   <meta name="robots" content="index, follow">
+  <meta name="author" content="Vipul Bariya">
+  <link rel="canonical" href="https://cyberport-scanner.onrender.com/">
   <meta property="og:title" content="CyberPort Scanner">
   <meta property="og:description" content="Professional network port scanner for educational & authorized security testing.">
+  <meta property="og:url" content="https://cyberport-scanner.onrender.com/">
   <meta property="og:type" content="website">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛰️</text></svg>">
 
   <!-- Fonts / Icons -->
@@ -38,23 +42,24 @@
   <!-- Header -->
   <header class="site-header">
     <div class="container nav-inner">
-      <a href="/" class="brand">
+      <a href="{{ url_for('main.home') }}" class="brand">
         <i class="fa-solid fa-satellite-dish brand-icon"></i>
         <span><span class="brand-cyber">Cyber</span><span class="brand-port">Port</span></span>
       </a>
 
       <nav class="nav-links" id="nav-links">
-        <a href="/" class="nav-link">Home</a>
-        <a href="/dashboard" class="nav-link">Scanner</a>
-        <a href="/history" class="nav-link">History</a>
-        <a href="/about" class="nav-link">About</a>
-        <a href="/contact" class="nav-link">Contact</a>
+        <a href="{{ url_for('main.home') }}" class="nav-link">Home</a>
+        <a href="{{ url_for('main.dashboard') }}" class="nav-link">Scanner</a>
+        <a href="{{ url_for('main.history') }}" class="nav-link">History</a>
+        <a href="{{ url_for('main.about') }}" class="nav-link">About</a>
+        <a href="{{ url_for('main.contact') }}" class="nav-link">Contact</a>
         {% if session.get('user_id') %}
           <span class="nav-user">{{ session.get('username') }}</span>
           <form action="{{ url_for('main.logout') }}" method="post" class="nav-logout-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="nav-link nav-logout">Logout</button>
           </form>
-          <a href="/dashboard" class="nav-cta">Launch Scanner</a>
+          <a href="{{ url_for('main.dashboard') }}" class="nav-cta">Launch Scanner</a>
         {% else %}
           <a href="{{ url_for('main.login') }}" class="nav-link">Login</a>
           <a href="{{ url_for('main.signup') }}" class="nav-cta">Sign Up</a>
@@ -85,28 +90,28 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="/" class="brand"><i class="fa-solid fa-satellite-dish brand-icon"></i><span><span class="brand-cyber">Cyber</span><span class="brand-port">Port</span></span></a>
+          <a href="{{ url_for('main.home') }}" class="brand"><i class="fa-solid fa-satellite-dish brand-icon"></i><span><span class="brand-cyber">Cyber</span><span class="brand-port">Port</span></span></a>
           <p>A professional-grade TCP port scanner built to teach network security fundamentals — for learners, students, and authorized penetration testers.</p>
           <div class="footer-social">
-            <a href="https://github.com" target="_blank" rel="noopener" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
-            <a href="https://linkedin.com" target="_blank" rel="noopener" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
-            <a href="https://twitter.com" target="_blank" rel="noopener" aria-label="Twitter / X"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://github.com/vipulbariya-code/CyberPort-Scanner" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>
+            <a href="https://www.linkedin.com/in/vipulbariya/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter / X"><i class="fa-brands fa-x-twitter"></i></a>
           </div>
         </div>
         <div>
           <div class="footer-heading">Navigate</div>
           <ul class="footer-links">
-            <li><a href="/">Home</a></li>
-            <li><a href="/dashboard">Scanner Dashboard</a></li>
-            <li><a href="/history">Scan History</a></li>
+            <li><a href="{{ url_for('main.home') }}">Home</a></li>
+            <li><a href="{{ url_for('main.dashboard') }}">Scanner Dashboard</a></li>
+            <li><a href="{{ url_for('main.history') }}">Scan History</a></li>
           </ul>
         </div>
         <div>
           <div class="footer-heading">Project</div>
           <ul class="footer-links">
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li><a href="https://github.com" target="_blank" rel="noopener">Source Code</a></li>
+            <li><a href="{{ url_for('main.about') }}">About</a></li>
+            <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+            <li><a href="https://github.com/vipulbariya-code/CyberPort-Scanner" target="_blank" rel="noopener noreferrer">Source Code</a></li>
           </ul>
         </div>
         <div>

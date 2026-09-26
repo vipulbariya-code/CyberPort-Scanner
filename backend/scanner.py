@@ -63,6 +63,21 @@ def validate_target(target: str) -> str:
     if not target:
         raise ValidationError("Target address is required.")
 
+    # Strip URL schemes if user inadvertently pasted a URL
+    if target.lower().startswith("http://"):
+        target = target[7:]
+    elif target.lower().startswith("https://"):
+        target = target[8:]
+
+    # Remove paths or query strings or port suffixes
+    target = target.split("/")[0].split("?")[0].strip()
+    if ":" in target and not target.startswith("["):
+        # Port attached to host e.g. 192.168.1.1:80
+        target = target.split(":")[0].strip()
+
+    if not target:
+        raise ValidationError("Target address is required.")
+
     # Try IPv4 first
     try:
         ipaddress.IPv4Address(target)
@@ -70,7 +85,12 @@ def validate_target(target: str) -> str:
     except ValueError:
         pass
 
-    # Fallback: hostname validation (RFC 1123-ish, permissive)
+    # Reject numeric dotted-quad strings that failed IPv4 validation (e.g. 999.999.999.999)
+    parts = target.split(".")
+    if len(parts) == 4 and all(p.isdigit() for p in parts):
+        raise ValidationError("Target is not a valid IPv4 address (octets must be 0–255).")
+
+    # Fallback: hostname validation (RFC 1123, permissive)
     hostname_pattern = re.compile(
         r"^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)"
         r"(\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$"
@@ -115,7 +135,11 @@ def resolve_target(target: str) -> str:
 
 def validate_resolved_target(address: str, private_only: bool = True) -> str:
     """Reject public destinations for the unauthenticated web interface."""
-    ip = ipaddress.ip_address(address)
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        raise ValidationError("Resolved address is not a valid IP.")
+
     if private_only and not (ip.is_private or ip.is_loopback):
         raise ValidationError(
             "This public scanner accepts only private-network or localhost targets."
@@ -175,7 +199,8 @@ class PortScanner:
         open_ports = []
         scanned = 0
 
-        with ThreadPoolExecutor(max_workers=min(self.max_threads, total)) as executor:
+        workers = max(1, min(self.max_threads, total)) if total > 0 else 1
+        with ThreadPoolExecutor(max_workers=workers) as executor:
             future_to_port = {executor.submit(self._scan_port, p): p for p in ports}
             for future in as_completed(future_to_port):
                 if self._cancelled:
@@ -183,7 +208,10 @@ class PortScanner:
                         pending.cancel()
                     break
                 port = future_to_port[future]
-                is_open = future.result()
+                try:
+                    is_open = future.result()
+                except Exception:
+                    is_open = False
                 scanned += 1
                 if is_open:
                     open_ports.append({
@@ -192,7 +220,10 @@ class PortScanner:
                         "state": "open",
                     })
                 if progress_callback:
-                    progress_callback(scanned, total, len(open_ports))
+                    try:
+                        progress_callback(scanned, total, len(open_ports))
+                    except Exception:
+                        pass
 
         open_ports.sort(key=lambda x: x["port"])
         duration = round(time.time() - start_time, 2)

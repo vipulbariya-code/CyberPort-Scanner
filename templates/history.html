@@ -23,7 +23,7 @@
     <div class="empty-state glass-card" id="history-empty" style="display:none; padding:60px 20px;">
       <i class="fa-solid fa-clock-rotate-left"></i>
       <div>No scans yet — run your first scan from the Dashboard.</div>
-      <a href="/dashboard" class="btn btn-primary btn-sm" style="margin-top:18px;"><i class="fa-solid fa-bolt"></i> Go to Scanner</a>
+      <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-sm" style="margin-top:18px;"><i class="fa-solid fa-bolt"></i> Go to Scanner</a>
     </div>
 
     <div class="pagination" id="history-pagination"></div>

@@ -8,13 +8,14 @@
     <h1>Welcome back</h1>
     <p>Log in to access your scanner dashboard and scan history.</p>
     <form method="post" class="auth-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
-        <label for="email">Email address</label>
-        <input class="form-input" type="email" id="email" name="email" autocomplete="email" required autofocus>
+        <label for="email">Email address or username</label>
+        <input class="form-input" type="text" id="email" name="email" autocomplete="username" required autofocus>
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input class="form-input" type="password" id="password" name="password" autocomplete="current-password" required>
+        <input class="form-input" type="password" id="password" name="password" autocomplete="current-password" maxlength="128" required>
       </div>
       <button class="btn btn-primary" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Log In</button>
     </form>

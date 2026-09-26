@@ -17,7 +17,7 @@ import uuid
 import re
 import sqlite3
 from functools import wraps
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from flask import (
     Blueprint, render_template, request, jsonify, send_file, current_app, abort,
@@ -59,14 +59,23 @@ def api_login_required(view):
 
 
 def _prune_jobs():
-    """Drop terminal jobs after a short retention period."""
-    now = datetime.utcnow()
+    """Drop terminal jobs after a short retention period and cap memory usage."""
+    now = datetime.now(timezone.utc)
     expired = [
         job_id for job_id, job in SCAN_JOBS.items()
         if job.get("finished_at") and now - job["finished_at"] > JOB_TTL
     ]
     for job_id in expired:
         SCAN_JOBS.pop(job_id, None)
+
+    # Hard cap on in-memory jobs to avoid memory leaks
+    if len(SCAN_JOBS) > 100:
+        sorted_jobs = sorted(
+            SCAN_JOBS.items(),
+            key=lambda item: item[1].get("started_at", ""),
+        )
+        for old_id, _ in sorted_jobs[: len(SCAN_JOBS) - 100]:
+            SCAN_JOBS.pop(old_id, None)
 
 
 # =====================================================================
@@ -114,6 +123,8 @@ def signup():
             flash("Enter a valid email address.", "error")
         elif len(password) < 8:
             flash("Password must be at least 8 characters.", "error")
+        elif len(password) > 128:
+            flash("Password must be 128 characters or fewer.", "error")
         elif password != confirm_password:
             flash("Passwords do not match.", "error")
         else:
@@ -137,9 +148,16 @@ def login():
     if session.get("user_id"):
         return redirect(url_for("main.dashboard"))
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
+        identifier = request.form.get("email", "").strip()
         password = request.form.get("password", "")
-        user = current_app.db.get_user_by_email(email)
+        if not identifier or not password:
+            flash("Email/username and password are required.", "error")
+            return render_template("login.html")
+        if len(password) > 128:
+            flash("Invalid email or password.", "error")
+            return render_template("login.html")
+
+        user = current_app.db.get_user_by_email_or_username(identifier)
         if not user or not check_password_hash(user["password_hash"], password):
             flash("Invalid email or password.", "error")
         else:
@@ -147,20 +165,23 @@ def login():
             session["user_id"] = user["id"]
             session["username"] = user["username"]
             next_url = request.args.get("next", "")
-            return redirect(next_url if next_url.startswith("/") else url_for("main.dashboard"))
+            # Prevent open redirects
+            if (
+                next_url
+                and next_url.startswith("/")
+                and not next_url.startswith("//")
+                and not next_url.startswith("/\\")
+            ):
+                return redirect(next_url)
+            return redirect(url_for("main.dashboard"))
     return render_template("login.html")
 
 
-@main_bp.route("/logout", methods=["POST"])
+@main_bp.route("/logout", methods=["GET", "POST"])
 def logout():
     session.clear()
     flash("You have been logged out.", "success")
     return redirect(url_for("main.home"))
-
-
-@main_bp.app_errorhandler(404)
-def not_found(e):
-    return render_template("404.html"), 404
 
 
 # =====================================================================
@@ -209,12 +230,12 @@ def _run_scan_job(job_id, app, target_ip, start_port, end_port, original_target,
             with JOBS_LOCK:
                 SCAN_JOBS[job_id].update(
                     status="completed", result=result, db_scan_id=scan_id,
-                    finished_at=datetime.utcnow()
+                    finished_at=datetime.now(timezone.utc)
                 )
         except Exception as exc:  # pragma: no cover - defensive
             with JOBS_LOCK:
                 SCAN_JOBS[job_id].update(
-                    status="error", error=str(exc), finished_at=datetime.utcnow()
+                    status="error", error=str(exc), finished_at=datetime.now(timezone.utc)
                 )
 
 
@@ -248,7 +269,7 @@ def start_scan():
             "target": target,
             "resolved_ip": resolved_ip,
             "user_id": session["user_id"],
-            "started_at": datetime.utcnow().isoformat(),
+            "started_at": datetime.now(timezone.utc).isoformat(),
         }
 
     app = current_app._get_current_object()
@@ -303,14 +324,20 @@ def cancel_scan(job_id):
         scanner_ref = job.get("scanner_ref")
         if scanner_ref:
             scanner_ref.cancel()
-        job.update(status="cancelled", finished_at=datetime.utcnow())
+        job.update(status="cancelled", finished_at=datetime.now(timezone.utc))
     return jsonify({"success": True})
 
 
 @api_bp.route("/stats")
-@api_login_required
 def stats():
-    return jsonify({"success": True, "data": current_app.db.get_dashboard_stats(session["user_id"])})
+    # If user is logged in, return their personalized dashboard stats;
+    # otherwise, return anonymous platform-wide summary for home page charts.
+    user_id = session.get("user_id")
+    if user_id:
+        data = current_app.db.get_dashboard_stats(user_id)
+    else:
+        data = current_app.db.get_public_stats()
+    return jsonify({"success": True, "data": data})
 
 
 @api_bp.route("/history")
@@ -339,27 +366,40 @@ def clear_history():
     return jsonify({"success": True})
 
 
+def _sanitize_csv_cell(value):
+    """Mitigate CSV formula injection in spreadsheet applications."""
+    text = str(value)
+    if text and text[0] in ("=", "+", "-", "@", "\t", "\r"):
+        return "'" + text
+    return text
+
+
 @api_bp.route("/history/<int:scan_id>/export")
 @api_login_required
 def export_csv(scan_id):
     scan = current_app.db.get_scan(scan_id, session["user_id"])
     if not scan:
-        abort(404)
+        return jsonify({"success": False, "error": "Scan not found or access denied."}), 404
 
     buffer = io.StringIO()
     writer = csv.writer(buffer)
-    writer.writerow(["Target", scan["target"]])
-    writer.writerow(["Resolved IP", scan["resolved_ip"]])
-    writer.writerow(["Scan Date", scan["created_at"]])
-    writer.writerow(["Port Range", f"{scan['start_port']}-{scan['end_port']}"])
-    writer.writerow(["Duration (s)", scan["duration_seconds"]])
+    writer.writerow(["Target", _sanitize_csv_cell(scan["target"])])
+    writer.writerow(["Resolved IP", _sanitize_csv_cell(scan["resolved_ip"])])
+    writer.writerow(["Scan Date", _sanitize_csv_cell(scan["created_at"])])
+    writer.writerow(["Port Range", _sanitize_csv_cell(f"{scan['start_port']}-{scan['end_port']}")])
+    writer.writerow(["Duration (s)", _sanitize_csv_cell(scan["duration_seconds"])])
     writer.writerow([])
     writer.writerow(["Port", "Service", "State"])
     for p in scan["open_ports"]:
-        writer.writerow([p["port"], p["service"], p["state"]])
+        writer.writerow([
+            _sanitize_csv_cell(p.get("port", "")),
+            _sanitize_csv_cell(p.get("service", "")),
+            _sanitize_csv_cell(p.get("state", "")),
+        ])
 
     mem = io.BytesIO(buffer.getvalue().encode("utf-8"))
-    filename = f"cyberport_scan_{scan_id}_{scan['target'].replace('.', '-')}.csv"
+    safe_target = re.sub(r"[^A-Za-z0-9_.-]", "_", str(scan["target"]))[:32]
+    filename = f"cyberport_scan_{scan_id}_{safe_target}.csv"
     return send_file(
         mem, mimetype="text/csv", as_attachment=True, download_name=filename
     )

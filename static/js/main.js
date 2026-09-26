@@ -146,6 +146,7 @@ window.Toast = Toast;
   const path = window.location.pathname;
   document.querySelectorAll('.nav-link').forEach((link) => {
     const href = link.getAttribute('href');
+    if (!href) return;
     if (href === path || (href !== '/' && path.startsWith(href))) {
       link.classList.add('active');
     }
@@ -153,13 +154,22 @@ window.Toast = Toast;
 })();
 
 // ---------------------------------------------------------------------
-// Small fetch helper with consistent error surfacing
+// Small fetch helper with CSRF token support and consistent error surfacing
 // ---------------------------------------------------------------------
 async function apiRequest(url, options = {}) {
+  const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+  const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+    ...(options.headers || {}),
+  };
+
   try {
     const res = await fetch(url, {
-      headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
       ...options,
+      headers,
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || data.success === false) {

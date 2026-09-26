@@ -219,30 +219,46 @@ http://127.0.0.1:5000
 
 ## Deployment configuration
 
-Set `SECRET_KEY` to a long random value in every production environment. The
-application deliberately refuses to start in production without it. Set
-`DATABASE_PATH` to a path on a mounted persistent disk if scan history must
-survive restarts. The default local SQLite file is not durable on ephemeral
-hosting filesystems.
+- **SECRET_KEY**: Set `SECRET_KEY` to a cryptographically secure random string in production. When `FLASK_ENV=production`, the application strictly refuses to start if this is unset.
+- **DATABASE_PATH**: Set `DATABASE_PATH` to a mounted persistent disk volume if you require scan history and user accounts to persist across container restarts. On Render's Free tier, the local container filesystem is **ephemeral** and resets on redeploy/spin-down; mounting a persistent disk is required for permanent data retention.
+- **PRIVATE_TARGETS_ONLY**: Enabled by default (`true`). Restricts scans to localhost (`127.0.0.1`) and RFC 1918 private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) to prevent the public deployment from being abused as an open proxy or internet port scanner.
+- **MAX_PORT_RANGE**: Defaults to 1024 ports per single request to protect shared server resources.
 
 ---
 
 # 📦 Deployment
 
-### Render
+### Render Deployment
 
-- Connect GitHub Repository
-- Deploy Web Service
-- Build Command
-
+- Connect your GitHub Repository to Render
+- Create a new **Web Service**
+- **Environment**: Python
+- **Build Command**:
 ```bash
 pip install -r requirements.txt
 ```
+- **Start Command**:
+```bash
+gunicorn --chdir backend app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+```
+- **Environment Variables**:
+  - `FLASK_ENV`: `production`
+  - `SECRET_KEY`: *(Generate secure random string)*
+  - `PYTHON_VERSION`: `3.11.9`
+  - `PRIVATE_TARGETS_ONLY`: `true`
 
-Start Command
+---
+
+# 🧪 Running Tests
+
+Automated testing is configured using `pytest`:
 
 ```bash
-python backend/app.py
+# Run complete test suite
+pytest -v
+
+# Run syntax and bytecode compilation verification
+python -m compileall backend
 ```
 
 ---
@@ -257,17 +273,10 @@ This project is licensed under the MIT License.
 
 ## Vipul Bariya
 
-🌐 Portfolio
-
-https://vipulbariya.netlify.app/
-
-💻 GitHub
-
-https://github.com/vipulbariya-code
-
-🚀 Live Project
-
-https://cyberport-scanner.onrender.com/
+🌐 **Portfolio**: [https://vipulbariya.netlify.app/](https://vipulbariya.netlify.app/)  
+💼 **LinkedIn**: [https://www.linkedin.com/in/vipulbariya/](https://www.linkedin.com/in/vipulbariya/)  
+💻 **GitHub**: [https://github.com/vipulbariya-code](https://github.com/vipulbariya-code)  
+🚀 **Live Project**: [https://cyberport-scanner.onrender.com/](https://cyberport-scanner.onrender.com/)
 
 ---
 

@@ -8,6 +8,7 @@
     <h1>Create your account</h1>
     <p>Save your scans privately and access the dashboard securely.</p>
     <form method="post" class="auth-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="form-group">
         <label for="username">Username</label>
         <input class="form-input" type="text" id="username" name="username" autocomplete="username" minlength="3" maxlength="30" required autofocus>
@@ -18,11 +19,11 @@
       </div>
       <div class="form-group">
         <label for="password">Password</label>
-        <input class="form-input" type="password" id="password" name="password" autocomplete="new-password" minlength="8" required>
+        <input class="form-input" type="password" id="password" name="password" autocomplete="new-password" minlength="8" maxlength="128" required>
       </div>
       <div class="form-group">
         <label for="confirm-password">Confirm password</label>
-        <input class="form-input" type="password" id="confirm-password" name="confirm_password" autocomplete="new-password" minlength="8" required>
+        <input class="form-input" type="password" id="confirm-password" name="confirm_password" autocomplete="new-password" minlength="8" maxlength="128" required>
       </div>
       <button class="btn btn-primary" type="submit"><i class="fa-solid fa-user-plus"></i> Create Account</button>
     </form>

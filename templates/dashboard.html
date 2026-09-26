@@ -60,8 +60,9 @@
             <input type="number" id="end-port-input" class="form-input" placeholder="1024" min="1" max="65535" value="1024" required>
             <span class="form-error" id="port-error"></span>
           </div>
-          <div class="form-group">
+          <div class="form-group scan-btn-group" style="display:flex; gap:8px;">
             <button type="submit" class="btn btn-primary" id="scan-btn"><i class="fa-solid fa-bolt"></i> Start Scan</button>
+            <button type="button" class="btn btn-outline" id="cancel-btn" style="display:none; color:var(--alert-magenta); border-color:rgba(255,47,126,0.4);"><i class="fa-solid fa-stop"></i> Cancel</button>
           </div>
         </div>
 
@@ -94,6 +95,16 @@
 
     <!-- Results -->
     <div class="glass-card results-panel reveal delay-3" id="results-panel" style="display:none;">
+      <div class="results-header-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fa-solid fa-list-check" style="color:var(--signal-green);"></i>
+          <h3 style="font-family:var(--font-ui); font-size:1.15rem; font-weight:700;">Discovered Open Ports</h3>
+        </div>
+        <div>
+          <span class="pill pill-open"><span class="pill-dot pulse"></span>Open TCP Services</span>
+        </div>
+      </div>
+
       <div class="results-toolbar">
         <div class="results-search">
           <i class="fa-solid fa-magnifying-glass"></i>
@@ -106,25 +117,20 @@
         </div>
       </div>
 
-      <div class="filter-tabs">
-        <button class="filter-tab active" data-filter="all">All Results</button>
-        <button class="filter-tab" data-filter="open">Open Only</button>
-      </div>
-
       <div class="results-table-wrap">
         <table class="results-table">
           <thead>
             <tr>
-              <th data-sort="port">Port <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="service">Service <i class="fa-solid fa-sort"></i></th>
-              <th data-sort="state">State <i class="fa-solid fa-sort"></i></th>
+              <th data-sort="port" style="cursor:pointer;">Port <i class="fa-solid fa-sort" id="sort-icon-port"></i></th>
+              <th data-sort="service" style="cursor:pointer;">Service <i class="fa-solid fa-sort" id="sort-icon-service"></i></th>
+              <th data-sort="state" style="cursor:pointer;">State <i class="fa-solid fa-sort" id="sort-icon-state"></i></th>
             </tr>
           </thead>
           <tbody id="results-body"></tbody>
         </table>
         <div class="empty-state" id="results-empty" style="display:none;">
-          <i class="fa-solid fa-inbox"></i>
-          <div>No results match your filters.</div>
+          <i class="fa-solid fa-shield-halved"></i>
+          <div id="results-empty-msg">No open ports detected in this range.</div>
         </div>
       </div>
     </div>
