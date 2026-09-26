@@ -1,11 +1,11 @@
-# 🛰️ CyberPort Scanner
+# CyberPort Scanner
 
 <div align="center">
 
-<h1>🛰️ CyberPort Scanner</h1>
+<img src="static/images/cyberport-logo.png" alt="CyberPort Scanner Logo" width="560">
 
 <p>
-A modern <b>Cyberpunk-Themed TCP Port Scanner</b> built with <b>Python, Flask, HTML, CSS & JavaScript</b> for educational and authorized network security testing.
+A modern <b>Cyberpunk-Themed TCP Port Scanner</b> built with <b>Python, Flask, HTML, CSS &amp; JavaScript</b> for educational and authorized network security testing.
 </p>
 
 <p>

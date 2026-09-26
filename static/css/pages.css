@@ -147,6 +147,22 @@
 .form-error { font-family: var(--font-mono); font-size: 0.72rem; color: var(--alert-magenta); min-height: 16px; }
 .auth-page { min-height: calc(100vh - var(--header-h)); display: grid; place-items: center; padding: 56px 20px; }
 .auth-card { width: min(100%, 460px); padding: 34px; }
+.auth-brand-lockup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.auth-brand-symbol {
+  width: 52px;
+  height: 52px;
+  filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.65));
+  transition: transform 0.3s var(--ease-out), filter 0.3s var(--ease-out);
+}
+.auth-brand-symbol:hover {
+  transform: scale(1.1) rotate(4deg);
+  filter: drop-shadow(0 0 18px rgba(0, 255, 157, 0.85));
+}
 .auth-card h1 { font-family: var(--font-display); font-size: 2rem; margin: 10px 0; }
 .auth-card p { color: var(--text-secondary); margin-bottom: 26px; }
 .auth-form { display: flex; flex-direction: column; gap: 16px; }

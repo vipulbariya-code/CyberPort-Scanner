@@ -13,7 +13,20 @@
   <meta property="og:url" content="https://cyberport-scanner.onrender.com/">
   <meta property="og:type" content="website">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛰️</text></svg>">
+
+  <!-- Brand Favicons & App Icons -->
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+
+  <!-- Social Sharing / OpenGraph Meta -->
+  <meta property="og:image" content="{{ url_for('static', filename='images/cyberport-og.png', _external=True) }}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CyberPort Scanner">
+  <meta name="twitter:description" content="Professional network port scanner for educational & authorized security testing.">
+  <meta name="twitter:image" content="{{ url_for('static', filename='images/cyberport-og.png', _external=True) }}">
 
   <!-- Fonts / Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +42,10 @@
 
   <!-- Loading screen -->
   <div id="loading-screen">
-    <div class="loader-logo">CYBERPORT_SCANNER</div>
+    <div class="loader-brand">
+      <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="" class="loader-symbol" width="52" height="52">
+      <div class="loader-logo">CYBERPORT_SCANNER</div>
+    </div>
     <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
     <div class="loader-status">initializing secure session…</div>
   </div>
@@ -42,9 +58,12 @@
   <!-- Header -->
   <header class="site-header">
     <div class="container nav-inner">
-      <a href="{{ url_for('main.home') }}" class="brand">
-        <i class="fa-solid fa-satellite-dish brand-icon"></i>
-        <span><span class="brand-cyber">Cyber</span><span class="brand-port">Port</span></span>
+      <a href="{{ url_for('main.home') }}" class="brand" aria-label="CyberPort Scanner Home">
+        <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Scanner Logo" class="brand-symbol" width="36" height="36">
+        <span class="brand-text">
+          <span class="brand-cyber">Cyber</span><span class="brand-port">Port</span>
+          <span class="brand-tag">SCANNER</span>
+        </span>
       </a>
 
       <nav class="nav-links" id="nav-links">
@@ -90,7 +109,13 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="{{ url_for('main.home') }}" class="brand"><i class="fa-solid fa-satellite-dish brand-icon"></i><span><span class="brand-cyber">Cyber</span><span class="brand-port">Port</span></span></a>
+          <a href="{{ url_for('main.home') }}" class="brand" aria-label="CyberPort Scanner Home">
+            <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Scanner Logo" class="brand-symbol" width="32" height="32">
+            <span class="brand-text">
+              <span class="brand-cyber">Cyber</span><span class="brand-port">Port</span>
+              <span class="brand-tag">SCANNER</span>
+            </span>
+          </a>
           <p>A professional-grade TCP port scanner built to teach network security fundamentals — for learners, students, and authorized penetration testers.</p>
           <div class="footer-social">
             <a href="https://github.com/vipulbariya-code/CyberPort-Scanner" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><i class="fa-brands fa-github"></i></a>

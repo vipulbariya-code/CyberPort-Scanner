@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="cyberCyanGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff" />
+      <stop offset="50%" stop-color="#00f5b8" />
+      <stop offset="100%" stop-color="#00ff9d" />
+    </linearGradient>
+    <linearGradient id="cyberVertical" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff" />
+      <stop offset="100%" stop-color="#00ff9d" />
+    </linearGradient>
+    <linearGradient id="shieldFill" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.14" />
+      <stop offset="50%" stop-color="#00ff9d" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#05080a" stop-opacity="0.85" />
+    </linearGradient>
+    <radialGradient id="radarSweepGrad" cx="60" cy="58" r="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.5" />
+      <stop offset="70%" stop-color="#00ff9d" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#00ff9d" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="coreGlow" cx="60" cy="58" r="16" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+      <stop offset="25%" stop-color="#00e5ff" stop-opacity="0.8" />
+      <stop offset="70%" stop-color="#00ff9d" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#00ff9d" stop-opacity="0" />
+    </radialGradient>
+    <!-- Glow Filters -->
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur1" />
+      <feGaussianBlur stdDeviation="5" result="blur2" />
+      <feMerge>
+        <feMergeNode in="blur2" />
+        <feMergeNode in="blur1" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Ambient Shield Backing -->
+  <path d="M 48 14 L 52 14 L 52 8 L 68 8 L 68 14 L 72 14 L 104 32 L 104 66 L 60 108 L 16 66 L 16 32 Z"
+        fill="url(#shieldFill)" />
+
+  <!-- Outer Cyber-Shield Frame with Top Port Connector Tab -->
+  <path d="M 48 14 L 52 14 L 52 8 L 68 8 L 68 14 L 72 14 L 104 32 L 104 66 L 60 108 L 16 66 L 16 32 Z"
+        stroke="url(#cyberVertical)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"
+        filter="url(#neonGlow)" />
+
+  <!-- Inner Circuit Perimeter -->
+  <path d="M 50 20 L 70 20 L 98 36 L 98 63 L 60 100 L 22 63 L 22 36 Z"
+        stroke="#00e5ff" stroke-width="1.2" stroke-opacity="0.45" stroke-dasharray="8 3 3 3" fill="none" />
+
+  <!-- Corner Via Pins (Connected Nodes) -->
+  <circle cx="22" cy="36" r="2" fill="#00ff9d" opacity="0.8" />
+  <circle cx="98" cy="36" r="2" fill="#00e5ff" opacity="0.8" />
+  <circle cx="22" cy="63" r="2" fill="#00ff9d" opacity="0.8" />
+  <circle cx="98" cy="63" r="2" fill="#00e5ff" opacity="0.8" />
+
+  <!-- Radar Scan Sweep Wedge -->
+  <path d="M 60 58 L 84 40 A 28 28 0 0 0 60 30 Z" fill="url(#radarSweepGrad)" />
+
+  <!-- Port Scanner Arcs (Reconnaissance Rings) -->
+  <!-- Outer Scanner Arc -->
+  <path d="M 60 32 A 26 26 0 1 1 36 48"
+        stroke="url(#cyberCyanGreen)" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.9" />
+  <!-- Inner Scanner Arc -->
+  <path d="M 47 47 A 17 17 0 1 1 60 75"
+        stroke="#00e5ff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8" />
+
+  <!-- Network Circuit Lines Connecting to Ports -->
+  <!-- North Port Connection -->
+  <line x1="60" y1="50" x2="60" y2="28" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" />
+  <!-- East Port Connection -->
+  <line x1="68" y1="58" x2="88" y2="58" stroke="#00ff9d" stroke-width="2" stroke-linecap="round" />
+  <!-- South Port Connection -->
+  <line x1="60" y1="66" x2="60" y2="86" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" />
+  <!-- West Port Connection -->
+  <line x1="52" y1="58" x2="32" y2="58" stroke="#00ff9d" stroke-width="2" stroke-linecap="round" />
+
+  <!-- Diagonal Circuit Traces -->
+  <path d="M 46 44 L 38 36 L 30 36" stroke="#00e5ff" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.6" />
+  <path d="M 74 44 L 82 36 L 90 36" stroke="#00ff9d" stroke-width="1.4" stroke-linecap="round" fill="none" opacity="0.6" />
+  <circle cx="30" cy="36" r="1.5" fill="#00e5ff" />
+  <circle cx="90" cy="36" r="1.5" fill="#00ff9d" />
+
+  <!-- 4 Primary Network Port Nodes -->
+  <!-- North Node -->
+  <circle cx="60" cy="28" r="4" fill="#05080a" stroke="#00e5ff" stroke-width="2" />
+  <circle cx="60" cy="28" r="1.8" fill="#00e5ff" />
+  <!-- East Node (Open Port Indicator) -->
+  <circle cx="88" cy="58" r="4" fill="#05080a" stroke="#00ff9d" stroke-width="2" />
+  <circle cx="88" cy="58" r="1.8" fill="#00ff9d" filter="url(#neonGlow)" />
+  <!-- South Node -->
+  <circle cx="60" cy="86" r="4" fill="#05080a" stroke="#00e5ff" stroke-width="2" />
+  <circle cx="60" cy="86" r="1.8" fill="#00e5ff" />
+  <!-- West Node -->
+  <circle cx="32" cy="58" r="4" fill="#05080a" stroke="#00ff9d" stroke-width="2" />
+  <circle cx="32" cy="58" r="1.8" fill="#00ff9d" />
+
+  <!-- Active Scan Ping Dot (Radar blip) -->
+  <circle cx="78" cy="42" r="2.2" fill="#ffffff" filter="url(#neonGlow)" />
+  <circle cx="78" cy="42" r="1.2" fill="#00ff9d" />
+
+  <!-- Center Port Scanner Core Target -->
+  <circle cx="60" cy="58" r="9" fill="url(#coreGlow)" />
+  <circle cx="60" cy="58" r="8" fill="#070f10" stroke="url(#cyberVertical)" stroke-width="2.2" />
+  <circle cx="60" cy="58" r="3.6" fill="#00ff9d" />
+  <circle cx="60" cy="58" r="1.5" fill="#ffffff" />
+
+  <!-- Center Reticle Crosshair Ticks -->
+  <line x1="60" y1="46" x2="60" y2="49" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="60" y1="67" x2="60" y2="70" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="48" y1="58" x2="51" y2="58" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" />
+  <line x1="69" y1="58" x2="72" y2="58" stroke="#00e5ff" stroke-width="1.5" stroke-linecap="round" />
+</svg>

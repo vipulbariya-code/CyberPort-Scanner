@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 120" width="100%" height="100%" fill="none">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800;900&amp;family=Rajdhani:wght@600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap');
+      .brand-title {
+        font-family: 'Orbitron', 'Bahnschrift', 'Segoe UI', sans-serif;
+        font-weight: 800;
+        font-size: 40px;
+        letter-spacing: 2px;
+      }
+      .brand-sub {
+        font-family: 'JetBrains Mono', 'Rajdhani', monospace, sans-serif;
+        font-weight: 700;
+        font-size: 13px;
+        letter-spacing: 6px;
+      }
+      .brand-badge {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 600;
+        font-size: 10px;
+        letter-spacing: 1.5px;
+      }
+    </style>
+    <linearGradient id="hLogoCyanGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff" />
+      <stop offset="60%" stop-color="#00ff9d" />
+      <stop offset="100%" stop-color="#00ff9d" />
+    </linearGradient>
+    <linearGradient id="hShieldFill" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.16" />
+      <stop offset="50%" stop-color="#00ff9d" stop-opacity="0.05" />
+      <stop offset="100%" stop-color="#05080a" stop-opacity="0.8" />
+    </linearGradient>
+    <radialGradient id="hRadarSweep" cx="60" cy="58" r="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00e5ff" stop-opacity="0.5" />
+      <stop offset="70%" stop-color="#00ff9d" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#00ff9d" stop-opacity="0" />
+    </radialGradient>
+    <filter id="hGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Left: CyberPort Symbol Emblem -->
+  <g transform="translate(4, 0)">
+    <!-- Ambient Shield Backing -->
+    <path d="M 48 14 L 52 14 L 52 8 L 68 8 L 68 14 L 72 14 L 104 32 L 104 66 L 60 108 L 16 66 L 16 32 Z"
+          fill="url(#hShieldFill)" />
+
+    <!-- Outer Cyber-Shield Frame -->
+    <path d="M 48 14 L 52 14 L 52 8 L 68 8 L 68 14 L 72 14 L 104 32 L 104 66 L 60 108 L 16 66 L 16 32 Z"
+          stroke="url(#hLogoCyanGreen)" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"
+          filter="url(#hGlow)" />
+
+    <!-- Inner Circuit Perimeter -->
+    <path d="M 50 20 L 70 20 L 98 36 L 98 63 L 60 100 L 22 63 L 22 36 Z"
+          stroke="#00e5ff" stroke-width="1.2" stroke-opacity="0.45" stroke-dasharray="8 3 3 3" fill="none" />
+
+    <!-- Radar Wedge -->
+    <path d="M 60 58 L 84 40 A 28 28 0 0 0 60 30 Z" fill="url(#hRadarSweep)" />
+
+    <!-- Scanner Arcs -->
+    <path d="M 60 32 A 26 26 0 1 1 36 48" stroke="url(#hLogoCyanGreen)" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.9" />
+    <path d="M 47 47 A 17 17 0 1 1 60 75" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8" />
+
+    <!-- Channel Lines -->
+    <line x1="60" y1="50" x2="60" y2="28" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" />
+    <line x1="68" y1="58" x2="88" y2="58" stroke="#00ff9d" stroke-width="2" stroke-linecap="round" />
+    <line x1="60" y1="66" x2="60" y2="86" stroke="#00e5ff" stroke-width="2" stroke-linecap="round" />
+    <line x1="52" y1="58" x2="32" y2="58" stroke="#00ff9d" stroke-width="2" stroke-linecap="round" />
+
+    <!-- 4 Port Nodes -->
+    <circle cx="60" cy="28" r="4" fill="#05080a" stroke="#00e5ff" stroke-width="2" />
+    <circle cx="60" cy="28" r="1.8" fill="#00e5ff" />
+    <circle cx="88" cy="58" r="4" fill="#05080a" stroke="#00ff9d" stroke-width="2" />
+    <circle cx="88" cy="58" r="1.8" fill="#00ff9d" filter="url(#hGlow)" />
+    <circle cx="60" cy="86" r="4" fill="#05080a" stroke="#00e5ff" stroke-width="2" />
+    <circle cx="60" cy="86" r="1.8" fill="#00e5ff" />
+    <circle cx="32" cy="58" r="4" fill="#05080a" stroke="#00ff9d" stroke-width="2" />
+    <circle cx="32" cy="58" r="1.8" fill="#00ff9d" />
+
+    <!-- Center Core -->
+    <circle cx="60" cy="58" r="8" fill="#070f10" stroke="url(#hLogoCyanGreen)" stroke-width="2.2" />
+    <circle cx="60" cy="58" r="3.6" fill="#00ff9d" />
+    <circle cx="60" cy="58" r="1.5" fill="#ffffff" />
+  </g>
+
+  <!-- Divider Circuit Line -->
+  <line x1="130" y1="28" x2="130" y2="92" stroke="#00e5ff" stroke-width="1.5" stroke-opacity="0.3" stroke-dasharray="4 4" />
+  <circle cx="130" cy="28" r="2" fill="#00e5ff" opacity="0.6" />
+  <circle cx="130" cy="92" r="2" fill="#00ff9d" opacity="0.6" />
+
+  <!-- Right: Typography -->
+  <g transform="translate(150, 0)">
+    <!-- Top Security Kicker Badge -->
+    <g transform="translate(0, 22)">
+      <rect x="0" y="0" width="138" height="18" rx="3" fill="#00e5ff" fill-opacity="0.08" stroke="#00e5ff" stroke-opacity="0.3" stroke-width="1" />
+      <circle cx="8" cy="9" r="3" fill="#00ff9d" />
+      <text x="16" y="12.5" fill="#00e5ff" class="brand-badge">SECURE RECON</text>
+    </g>
+
+    <!-- Main Title: CYBERPORT -->
+    <text x="0" y="74" class="brand-title">
+      <tspan fill="#00ff9d" filter="url(#hGlow)">CYBER</tspan><tspan fill="#e6fff5">PORT</tspan>
+    </text>
+
+    <!-- Subtitle: SCANNER with Terminal Bracket Accents -->
+    <text x="2" y="98" fill="#8fb5ac" class="brand-sub">
+      <tspan fill="#00e5ff">//</tspan> SCANNER <tspan fill="#00e5ff">PORT INTEL</tspan>
+    </text>
+  </g>
+</svg>
