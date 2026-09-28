@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% block title %}REST API Documentation — CyberPort Scanner{% endblock %}
+{% block description %}Official OpenAPI 3.0 documentation for CyberPort Scanner REST API v1. Explore endpoints, parameters, examples, and authentication.{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  /* Swagger UI dark cyberpunk theme integration */
+  .swagger-ui {
+    color: var(--text-main);
+    font-family: var(--font-body);
+  }
+  .swagger-ui .info {
+    margin: 20px 0;
+  }
+  .swagger-ui .info .title {
+    color: var(--signal-green);
+    font-family: var(--font-ui);
+    letter-spacing: 0.5px;
+  }
+  .swagger-ui .info p, .swagger-ui .info li {
+    color: var(--text-muted);
+  }
+  .swagger-ui .scheme-container {
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: none;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+  .swagger-ui .opblock {
+    background: rgba(10, 20, 36, 0.6);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    margin: 0 0 16px;
+  }
+  .swagger-ui .opblock .opblock-summary {
+    border-color: rgba(255, 255, 255, 0.08);
+    padding: 10px 14px;
+  }
+  .swagger-ui .opblock .opblock-summary-method {
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+  }
+  .swagger-ui .opblock .opblock-summary-path {
+    color: #fff;
+    font-family: var(--font-mono);
+  }
+  .swagger-ui .opblock .opblock-summary-description {
+    color: var(--text-muted);
+  }
+  .swagger-ui .opblock-body {
+    background: rgba(4, 9, 19, 0.85);
+  }
+  .swagger-ui .opblock-description-wrapper p,
+  .swagger-ui .opblock-external-docs-wrapper p,
+  .swagger-ui .opblock-title_normal p {
+    color: var(--text-muted);
+  }
+  .swagger-ui table thead tr td, .swagger-ui table thead tr th {
+    color: var(--signal-green);
+    border-color: rgba(255, 255, 255, 0.08);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+  }
+  .swagger-ui .parameters-col_name {
+    color: #fff;
+  }
+  .swagger-ui .parameter__name {
+    color: var(--signal-green);
+    font-family: var(--font-mono);
+  }
+  .swagger-ui .parameter__type {
+    color: var(--signal-blue);
+    font-family: var(--font-mono);
+  }
+  .swagger-ui input[type=text], .swagger-ui textarea {
+    background: #050d1a !important;
+    color: #fff !important;
+    border: 1px solid rgba(0, 255, 204, 0.3) !important;
+    border-radius: 4px;
+  }
+  .swagger-ui .responses-inner h4, .swagger-ui .responses-inner h5 {
+    color: var(--signal-green);
+  }
+  .swagger-ui .response-col_status {
+    color: var(--signal-green);
+    font-family: var(--font-mono);
+  }
+  .swagger-ui .response-col_description__inner div.markdown,
+  .swagger-ui .response-col_description__inner div.renderedMarkdown {
+    color: var(--text-muted);
+  }
+  .swagger-ui .btn.authorize {
+    color: var(--signal-green);
+    border-color: var(--signal-green);
+    background: transparent;
+    border-radius: 6px;
+    font-family: var(--font-ui);
+    font-weight: 700;
+  }
+  .swagger-ui .btn.authorize svg {
+    fill: var(--signal-green);
+  }
+  .swagger-ui .btn.execute {
+    background-color: var(--signal-green);
+    color: #030712;
+    border-color: var(--signal-green);
+    font-weight: 700;
+    border-radius: 4px;
+  }
+  .swagger-ui .model-title {
+    color: var(--signal-green);
+  }
+  .swagger-ui .model {
+    color: var(--text-muted);
+  }
+  .swagger-ui section.models {
+    border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    background: rgba(10, 20, 36, 0.5);
+  }
+  .swagger-ui section.models h4 {
+    color: var(--signal-green);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="page-section tight">
+  <div class="container">
+
+    <div class="dash-header reveal">
+      <div>
+        <div class="section-kicker">api documentation</div>
+        <h1 class="section-title" style="margin-bottom:0;">REST API <span class="text-gradient">Reference</span></h1>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <a href="/api/v1/openapi.json" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-code"></i> OpenAPI JSON</a>
+        {% if session.get('user_id') %}
+          <a href="{{ url_for('main.developer') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-key"></i> Get API Key</a>
+        {% else %}
+          <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login to Get Key</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Quick Overview Guides -->
+    <div class="dash-widgets reveal delay-1" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom:28px;">
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Base URL</span><i class="fa-solid fa-link widget-icon"></i></div>
+        <div class="widget-value" style="font-size:1.05rem; color:var(--signal-green);">/api/v1</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">https://cyberport-scanner.onrender.com/api/v1</div>
+      </div>
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Authentication</span><i class="fa-solid fa-shield-halved widget-icon"></i></div>
+        <div class="widget-value" style="font-size:1.05rem;">Bearer Token</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Authorization: Bearer cps_live_...</div>
+      </div>
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Rate Limit</span><i class="fa-solid fa-gauge-high widget-icon"></i></div>
+        <div class="widget-value" style="font-size:1.05rem; color:var(--signal-blue);">60 / min</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">10 scans/min · Max 2 concurrent</div>
+      </div>
+      <div class="glass-card widget-card">
+        <div class="widget-top"><span class="widget-label">Safety Guardrail</span><i class="fa-solid fa-lock widget-icon"></i></div>
+        <div class="widget-value" style="font-size:1.05rem; color:var(--signal-green);">Private Targets</div>
+        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Max 1024 ports per scan</div>
+      </div>
+    </div>
+
+    <!-- Documentation & Interactive Swagger UI Container -->
+    <div class="glass-card reveal delay-2" style="padding:28px; margin-bottom:30px;">
+      <div style="margin-bottom:24px; padding-bottom:18px; border-bottom:1px solid rgba(255,255,255,0.08);">
+        <h2 style="font-family:var(--font-ui); margin:0 0 10px 0;">Interactive API Explorer</h2>
+        <p style="color:var(--text-muted); font-size:0.92rem; margin:0;">
+          Test endpoints live in your browser using OpenAPI 3.0. Click <b>Authorize</b> below and provide your API key (starting with <code>cps_live_</code>) to make authenticated scan requests.
+        </p>
+      </div>
+
+      <!-- Swagger UI mounts here -->
+      <div id="swagger-ui"></div>
+    </div>
+
+    <!-- Error Codes & Standard Guidelines -->
+    <div class="glass-card reveal delay-3" style="padding:28px;">
+      <h3 style="font-family:var(--font-ui); margin:0 0 16px 0;"><i class="fa-solid fa-circle-info" style="color:var(--signal-green); margin-right:8px;"></i> Error Codes &amp; Response Specification</h3>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:18px;">
+        All API responses follow a uniform JSON schema. Client errors and server rejections return <code>"success": false</code> with a structured <code>error</code> object containing an application-specific code and human-readable message.
+      </p>
+
+      <div class="results-table-wrap">
+        <table class="results-table" style="margin:0;">
+          <thead>
+            <tr>
+              <th>HTTP Status</th>
+              <th>Error Code</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>400 Bad Request</code></td>
+              <td><code>INVALID_TARGET</code></td>
+              <td>Target address is missing, malformed, or has an invalid hostname/IPv4 format.</td>
+            </tr>
+            <tr>
+              <td><code>400 Bad Request</code></td>
+              <td><code>INVALID_PORTS</code></td>
+              <td>Ports must be positive integers between 1 and 65535, with start &lt;= end.</td>
+            </tr>
+            <tr>
+              <td><code>400 Bad Request</code></td>
+              <td><code>PORT_RANGE_TOO_LARGE</code></td>
+              <td>Scans are capped at a maximum of 1024 ports per request.</td>
+            </tr>
+            <tr>
+              <td><code>400 Bad Request</code></td>
+              <td><code>TARGET_NOT_ALLOWED</code></td>
+              <td>Target resolves to a public or restricted IP under <code>PRIVATE_TARGETS_ONLY=true</code>.</td>
+            </tr>
+            <tr>
+              <td><code>401 Unauthorized</code></td>
+              <td><code>UNAUTHORIZED</code></td>
+              <td>Missing or malformed Authorization header. Use <code>Authorization: Bearer &lt;KEY&gt;</code>.</td>
+            </tr>
+            <tr>
+              <td><code>401 Unauthorized</code></td>
+              <td><code>INVALID_API_KEY</code></td>
+              <td>The provided API key does not exist or failed hash verification.</td>
+            </tr>
+            <tr>
+              <td><code>401 Unauthorized</code></td>
+              <td><code>REVOKED_API_KEY</code></td>
+              <td>The API key has been revoked by the owner and can no longer be used.</td>
+            </tr>
+            <tr>
+              <td><code>404 Not Found</code></td>
+              <td><code>SCAN_NOT_FOUND</code></td>
+              <td>Scan ID does not exist or does not belong to the authenticated user (strict IDOR protection).</td>
+            </tr>
+            <tr>
+              <td><code>429 Too Many Requests</code></td>
+              <td><code>RATE_LIMIT_EXCEEDED</code></td>
+              <td>Per-minute request limit exceeded. Wait before retrying.</td>
+            </tr>
+            <tr>
+              <td><code>429 Too Many Requests</code></td>
+              <td><code>CONCURRENT_SCAN_LIMIT</code></td>
+              <td>User has reached the maximum of 2 concurrent ongoing scans.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5/swagger-ui-bundle.js" crossorigin="anonymous"></script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    if (typeof SwaggerUIBundle !== "undefined") {
+      SwaggerUIBundle({
+        url: "/api/v1/openapi.json",
+        dom_id: "#swagger-ui",
+        deepLinking: true,
+        presets: [
+          SwaggerUIBundle.presets.apis,
+          SwaggerUIBundle.SwaggerUIStandalonePreset
+        ],
+        layout: "BaseLayout",
+        defaultModelsExpandDepth: 1,
+        defaultModelExpandDepth: 1,
+        docExpansion: "list",
+        persistAuthorization: true
+      });
+    }
+  });
+</script>
+{% endblock %}

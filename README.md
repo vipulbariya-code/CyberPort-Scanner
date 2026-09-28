@@ -124,6 +124,8 @@ CyberPort-Scanner
 │
 ├── backend
 │   ├── app.py
+│   ├── api_v1.py
+│   ├── ports_data.py
 │   ├── scanner.py
 │   ├── routes.py
 │   ├── models.py
@@ -206,6 +208,222 @@ http://127.0.0.1:5000
 7. View Scan History
 
 ---
+
+# 🌐 CyberPort Scanner REST API
+
+CyberPort Scanner provides a first-party, authenticated REST API under the versioned prefix `/api/v1`. The API allows programmatic access to port scanning, results retrieval, user history, stats, and educational port intelligence without depending on third-party scanning services.
+
+- **Base URL**: `https://cyberport-scanner.onrender.com/api/v1`
+- **Interactive Documentation**: `https://cyberport-scanner.onrender.com/api/docs`
+- **OpenAPI Specification**: `https://cyberport-scanner.onrender.com/api/v1/openapi.json`
+
+---
+
+## 🔑 Authentication
+
+Authenticate requests using standard HTTP Bearer token headers:
+
+```http
+Authorization: Bearer YOUR_API_KEY
+```
+
+> **API Key Safety Notice:**
+> - Generate API keys in your dashboard under **Developer API** (`/developer`).
+> - Keys start with `cps_live_` followed by cryptographically random entropy.
+> - Plaintext keys are never stored in the database (only secure SHA-256 hashes are persisted).
+> - The full key is displayed **only once** upon generation.
+
+---
+
+## 🛡️ Scanner Safety & Responsible Use
+
+The REST API enforces the identical strict safety guardrails as the web interface:
+
+1. **Authorized Testing Only:** Port scanning must only be performed on networks and hosts you own or have explicit written authorization to test.
+2. **Private Targets Only (`PRIVATE_TARGETS_ONLY=true`):** Scans are restricted to private subnets (RFC 1918: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) and loopback (`127.0.0.1`). Public Internet targets are rejected with `400 Bad Request` (`TARGET_NOT_ALLOWED`).
+3. **Port Range Cap:** Maximum **1024 ports** per request.
+4. **Rate Limits & Concurrency:**
+   - 60 API requests per minute per key
+   - 10 scan starts per minute
+   - Maximum **2 concurrent scans** per user account
+   - Excess requests receive `429 Too Many Requests`
+
+---
+
+## 📡 API Endpoints
+
+### 1. Health Check
+```bash
+curl -X GET https://cyberport-scanner.onrender.com/api/v1/health
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "service": "CyberPort Scanner API",
+  "version": "v1",
+  "status": "healthy"
+}
+```
+
+### 2. Start a Scan
+```bash
+curl -X POST https://cyberport-scanner.onrender.com/api/v1/scans \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target": "192.168.1.10",
+    "start_port": 1,
+    "end_port": 100
+  }'
+```
+**Response (201 Created):**
+```json
+{
+  "success": true,
+  "scan_id": 123,
+  "status": "running",
+  "target": "192.168.1.10",
+  "resolved_ip": "192.168.1.10",
+  "start_port": 1,
+  "end_port": 100,
+  "total_ports": 100,
+  "created_at": "2026-09-29T00:15:00Z"
+}
+```
+
+### 3. Get Scan Status & Results
+```bash
+curl -X GET https://cyberport-scanner.onrender.com/api/v1/scans/123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "scan": {
+    "id": 123,
+    "target": "192.168.1.10",
+    "resolved_ip": "192.168.1.10",
+    "start_port": 1,
+    "end_port": 100,
+    "status": "completed",
+    "open_ports": [
+      {
+        "port": 22,
+        "service": "SSH",
+        "state": "open"
+      },
+      {
+        "port": 80,
+        "service": "HTTP",
+        "state": "open"
+      }
+    ],
+    "total_ports_scanned": 100,
+    "open_ports_count": 2,
+    "closed_ports_count": 98,
+    "duration_seconds": 0.45,
+    "created_at": "2026-09-29T00:15:00Z"
+  }
+}
+```
+
+### 4. List Scan History (Paginated)
+```bash
+curl -X GET "https://cyberport-scanner.onrender.com/api/v1/scans?page=1&per_page=20" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "scans": [ ... ],
+  "pagination": {
+    "page": 1,
+    "per_page": 20,
+    "total_items": 15,
+    "total_pages": 1,
+    "has_next": false,
+    "has_prev": false
+  }
+}
+```
+
+### 5. Delete a Scan (Strict IDOR Protected)
+```bash
+curl -X DELETE https://cyberport-scanner.onrender.com/api/v1/scans/123 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Scan deleted successfully."
+}
+```
+
+### 6. User Statistics
+```bash
+curl -X GET https://cyberport-scanner.onrender.com/api/v1/stats \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "stats": {
+    "total_scans": 10,
+    "open_ports": 25,
+    "closed_ports": 450,
+    "avg_duration": 1.2
+  }
+}
+```
+
+### 7. Educational Port Intelligence
+```bash
+curl -X GET https://cyberport-scanner.onrender.com/api/v1/ports/443 \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+**Response (200 OK):**
+```json
+{
+  "success": true,
+  "port": 443,
+  "protocol": "TCP",
+  "service": "HTTPS",
+  "description": "Hypertext Transfer Protocol Secure (HTTPS) encrypts web traffic using TLS/SSL to protect data integrity and confidentiality."
+}
+```
+
+---
+
+## 🛑 Error Response Format
+
+All API errors return consistent JSON:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_TARGET",
+    "message": "Target address is required."
+  }
+}
+```
+
+| HTTP Status | Error Code | Meaning |
+|:---|:---|:---|
+| `400 Bad Request` | `INVALID_TARGET` | Invalid host format or malformed IP |
+| `400 Bad Request` | `TARGET_NOT_ALLOWED` | Public or non-private destination |
+| `400 Bad Request` | `PORT_RANGE_TOO_LARGE` | Range exceeds 1024 ports limit |
+| `401 Unauthorized` | `UNAUTHORIZED` | Missing or invalid Authorization header |
+| `401 Unauthorized` | `INVALID_API_KEY` | Key does not exist or verification failed |
+| `401 Unauthorized` | `REVOKED_API_KEY` | Key has been revoked |
+| `404 Not Found` | `SCAN_NOT_FOUND` | Scan does not exist or belongs to another user |
+| `429 Too Many Requests` | `RATE_LIMIT_EXCEEDED` | Request frequency limit exceeded |
+| `429 Too Many Requests` | `CONCURRENT_SCAN_LIMIT` | Exceeded 2 concurrent scans |
 
 # 🔐 Security
 

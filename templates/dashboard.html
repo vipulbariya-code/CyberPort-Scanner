@@ -135,6 +135,27 @@
       </div>
     </div>
 
+    <!-- Developer REST API Panel -->
+    <div class="glass-card reveal delay-3" style="margin-top:30px; padding:26px 30px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <div style="width:48px; height:48px; border-radius:10px; background:rgba(0,255,204,0.12); border:1px solid rgba(0,255,204,0.3); display:flex; align-items:center; justify-content:center; color:var(--signal-green); font-size:1.3rem;">
+            <i class="fa-solid fa-code"></i>
+          </div>
+          <div>
+            <h3 style="margin:0 0 4px 0; font-family:var(--font-ui); font-size:1.15rem; font-weight:700;">Developer REST API</h3>
+            <p style="margin:0; color:var(--text-muted); font-size:0.88rem;">
+              Generate first-party API keys, integrate automated scans into CI/CD, and access Swagger documentation.
+            </p>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <a href="/api/docs" class="btn btn-outline btn-sm"><i class="fa-solid fa-book"></i> Interactive Docs</a>
+          <a href="{{ url_for('main.developer') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-key"></i> Manage API Keys</a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 {% endblock %}

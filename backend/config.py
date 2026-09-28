@@ -43,6 +43,11 @@ class Config:
     RATE_LIMIT_DEFAULT = "60 per hour"
     RATE_LIMIT_SCAN = "10 per minute"
 
+    # --- REST API settings ---
+    RATE_LIMIT_API_DEFAULT = os.environ.get("RATE_LIMIT_API_DEFAULT", "60 per minute")
+    RATE_LIMIT_API_SCAN = os.environ.get("RATE_LIMIT_API_SCAN", "10 per minute")
+    MAX_CONCURRENT_SCANS_PER_USER = int(os.environ.get("MAX_CONCURRENT_SCANS_PER_USER", 2))
+
     # --- Pagination ---
     HISTORY_PAGE_SIZE = 10
 
@@ -63,6 +68,9 @@ class TestingConfig(Config):
     DATABASE_PATH = ":memory:"
     RATE_LIMIT_DEFAULT = "1000 per hour"
     RATE_LIMIT_SCAN = "1000 per minute"
+    RATE_LIMIT_API_DEFAULT = "1000 per minute"
+    RATE_LIMIT_API_SCAN = "1000 per minute"
+    MAX_CONCURRENT_SCANS_PER_USER = 5
 
 
 config_map = {

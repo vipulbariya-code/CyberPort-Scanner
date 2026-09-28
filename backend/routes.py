@@ -98,6 +98,17 @@ def history():
     return render_template("history.html")
 
 
+@main_bp.route("/developer")
+@page_login_required
+def developer():
+    return render_template("developer.html")
+
+
+@main_bp.route("/api/docs")
+def api_docs():
+    return render_template("api_docs.html")
+
+
 @main_bp.route("/about")
 def about():
     return render_template("about.html")
@@ -403,3 +414,33 @@ def export_csv(scan_id):
     return send_file(
         mem, mimetype="text/csv", as_attachment=True, download_name=filename
     )
+
+
+@api_bp.route("/keys", methods=["GET"])
+@api_login_required
+def get_user_keys():
+    keys = current_app.db.list_api_keys(session["user_id"])
+    return jsonify({"success": True, "keys": keys})
+
+
+@api_bp.route("/keys", methods=["POST"])
+@api_login_required
+def generate_user_key():
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "Default Key").strip()[:64] or "Default Key"
+    key_info = current_app.db.create_api_key(session["user_id"], name=name)
+    return jsonify({
+        "success": True,
+        "key": key_info,
+        "warning": "The full API key is displayed only once. Store it securely."
+    }), 201
+
+
+@api_bp.route("/keys/<int:key_id>", methods=["DELETE"])
+@api_login_required
+def revoke_user_key(key_id):
+    ok = current_app.db.revoke_api_key(key_id, session["user_id"])
+    if not ok:
+        return jsonify({"success": False, "error": "API key not found or already revoked."}), 404
+    return jsonify({"success": True, "message": "API key revoked successfully."})
+

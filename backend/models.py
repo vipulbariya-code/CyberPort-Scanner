@@ -12,6 +12,8 @@ import sqlite3
 import json
 import os
 import uuid
+import hashlib
+import secrets
 from contextlib import contextmanager
 from datetime import datetime, timezone
 
@@ -99,6 +101,27 @@ class Database:
                 "CREATE INDEX IF NOT EXISTS idx_scans_user_created ON scans (user_id, created_at DESC)"
             )
 
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS api_keys (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    name TEXT NOT NULL,
+                    key_hash TEXT NOT NULL UNIQUE,
+                    key_prefix TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    last_used_at TEXT,
+                    revoked_at TEXT
+                )
+                """
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys (key_hash)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_api_keys_user_id ON api_keys (user_id)"
+            )
+
     # ---------------------------------------------------------------
     # Write operations
     # ---------------------------------------------------------------
@@ -161,6 +184,149 @@ class Database:
     def clear_history(self, user_id):
         with self.get_connection() as conn:
             conn.execute("DELETE FROM scans WHERE user_id = ?", (user_id,))
+
+    def update_scan(self, scan_id, user_id=None, status="completed",
+                    total_ports_scanned=None, open_ports=None, duration_seconds=None):
+        with self.get_connection() as conn:
+            fields = ["status = ?"]
+            values = [status]
+            if total_ports_scanned is not None:
+                fields.append("total_ports_scanned = ?")
+                values.append(total_ports_scanned)
+            if open_ports is not None:
+                open_ports_count = len(open_ports)
+                total = total_ports_scanned if total_ports_scanned is not None else open_ports_count
+                closed_ports_count = max(total - open_ports_count, 0)
+                fields.append("open_ports_count = ?")
+                values.append(open_ports_count)
+                fields.append("closed_ports_count = ?")
+                values.append(closed_ports_count)
+                fields.append("open_ports_json = ?")
+                values.append(json.dumps(open_ports))
+            if duration_seconds is not None:
+                fields.append("duration_seconds = ?")
+                values.append(duration_seconds)
+
+            where = "WHERE id = ?"
+            values.append(scan_id)
+            if user_id is not None:
+                where += " AND user_id = ?"
+                values.append(user_id)
+
+            cursor = conn.execute(f"UPDATE scans SET {', '.join(fields)} {where}", values)
+            return cursor.rowcount > 0
+
+    def count_active_scans(self, user_id):
+        with self.get_connection() as conn:
+            row = conn.execute(
+                "SELECT COUNT(*) FROM scans WHERE user_id = ? AND status = 'running'",
+                (user_id,),
+            ).fetchone()
+            return row[0] if row else 0
+
+    # ---------------------------------------------------------------
+    # API Key operations
+    # ---------------------------------------------------------------
+    def create_api_key(self, user_id, name="Default Key"):
+        clean_name = (name or "Default Key").strip()[:64] or "Default Key"
+        # Generate cryptographically secure random key
+        # Format: cps_live_<32 url-safe chars> (256-bit entropy)
+        raw_key = f"cps_live_{secrets.token_urlsafe(32)}"
+        key_hash = hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+        prefix = f"{raw_key[:12]}...{raw_key[-4:]}"
+        masked_key = f"{raw_key[:12]}••••••••{raw_key[-4:]}"
+        created_at = datetime.now(timezone.utc).isoformat()
+
+        with self.get_connection() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO api_keys (user_id, name, key_hash, key_prefix, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (user_id, clean_name, key_hash, prefix, created_at),
+            )
+            key_id = cursor.lastrowid
+            return {
+                "id": key_id,
+                "user_id": user_id,
+                "name": clean_name,
+                "api_key": raw_key,
+                "masked_key": masked_key,
+                "key_prefix": prefix,
+                "created_at": created_at,
+                "last_used_at": None,
+                "revoked_at": None,
+            }
+
+    def get_api_key_by_hash(self, key_hash):
+        with self.get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT ak.id, ak.user_id, ak.name, ak.key_hash, ak.key_prefix,
+                       ak.created_at, ak.last_used_at, ak.revoked_at,
+                       u.username, u.email
+                FROM api_keys ak
+                JOIN users u ON ak.user_id = u.id
+                WHERE ak.key_hash = ?
+                """,
+                (key_hash,),
+            ).fetchone()
+            return dict(row) if row else None
+
+    def touch_api_key(self, key_id):
+        with self.get_connection() as conn:
+            conn.execute(
+                "UPDATE api_keys SET last_used_at = ? WHERE id = ?",
+                (datetime.now(timezone.utc).isoformat(), key_id),
+            )
+
+    def list_api_keys(self, user_id):
+        with self.get_connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, user_id, name, key_prefix, created_at, last_used_at, revoked_at
+                FROM api_keys
+                WHERE user_id = ?
+                ORDER BY created_at DESC
+                """,
+                (user_id,),
+            ).fetchall()
+            keys = []
+            for r in rows:
+                d = dict(r)
+                d["masked_key"] = d["key_prefix"].replace("...", "••••••••")
+                d["is_active"] = d["revoked_at"] is None
+                keys.append(d)
+            return keys
+
+    def revoke_api_key(self, key_id, user_id):
+        with self.get_connection() as conn:
+            cursor = conn.execute(
+                """
+                UPDATE api_keys
+                SET revoked_at = ?
+                WHERE id = ? AND user_id = ? AND revoked_at IS NULL
+                """,
+                (datetime.now(timezone.utc).isoformat(), key_id, user_id),
+            )
+            return cursor.rowcount > 0
+
+    def get_api_key(self, key_id, user_id):
+        with self.get_connection() as conn:
+            row = conn.execute(
+                """
+                SELECT id, user_id, name, key_prefix, created_at, last_used_at, revoked_at
+                FROM api_keys
+                WHERE id = ? AND user_id = ?
+                """,
+                (key_id, user_id),
+            ).fetchone()
+            if not row:
+                return None
+            d = dict(row)
+            d["masked_key"] = d["key_prefix"].replace("...", "••••••••")
+            d["is_active"] = d["revoked_at"] is None
+            return d
 
     # ---------------------------------------------------------------
     # Read operations

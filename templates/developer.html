@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Developer API & API Keys — CyberPort Scanner{% endblock %}
+{% block description %}Generate and manage first-party API keys, view masked credentials, and integrate with the CyberPort Scanner REST API.{% endblock %}
+
+{% block content %}
+<section class="page-section tight">
+  <div class="container">
+
+    <div class="dash-header reveal">
+      <div>
+        <div class="section-kicker">developer platform</div>
+        <h1 class="section-title" style="margin-bottom:0;">Developer <span class="text-gradient">API &amp; Keys</span></h1>
+      </div>
+      <div>
+        <a href="/api/docs" class="btn btn-outline btn-sm"><i class="fa-solid fa-book-bookmark"></i> View API Documentation</a>
+      </div>
+    </div>
+
+    <!-- Overview & Base URL Card -->
+    <div class="glass-card reveal delay-1" style="margin-bottom:24px; padding:22px 28px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+            <span class="pill pill-open"><span class="pill-dot pulse"></span>REST API v1 Live</span>
+            <span style="color:var(--text-muted); font-size:0.85rem;">Authentication: Bearer Token</span>
+          </div>
+          <p style="margin:0; color:var(--text-muted); font-size:0.92rem;">
+            Integrate CyberPort Scanner into your automated workflows, CI pipelines, and custom security scripts.
+          </p>
+        </div>
+        <div style="background:rgba(0,0,0,0.4); border:1px solid rgba(0,255,204,0.2); border-radius:6px; padding:8px 14px; font-family:var(--font-mono); font-size:0.85rem; color:var(--signal-green); display:flex; align-items:center; gap:10px;">
+          <span>Base URL: <b>/api/v1</b></span>
+          <button type="button" class="btn-copy-chip" data-copy="/api/v1" title="Copy Base URL" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer;"><i class="fa-regular fa-copy"></i></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Key Generated Banner (Hidden by default, shown once after key generation) -->
+    <div id="key-generated-alert" class="glass-card reveal" style="display:none; border-color:var(--signal-green); background:rgba(0, 255, 204, 0.08); margin-bottom:24px; padding:24px;">
+      <div style="display:flex; align-items:flex-start; gap:14px;">
+        <i class="fa-solid fa-triangle-exclamation" style="color:var(--signal-green); font-size:1.6rem; margin-top:2px;"></i>
+        <div style="flex:1;">
+          <h3 style="margin:0 0 6px 0; color:var(--signal-green); font-family:var(--font-ui);">API Key Generated Successfully</h3>
+          <p style="margin:0 0 12px 0; color:#fff; font-size:0.92rem; font-weight:600;">
+            ⚠️ The full API key is displayed only once. Store it securely. You will not be able to view it again.
+          </p>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+            <input type="text" id="newly-generated-key" readonly style="font-family:var(--font-mono); background:#050d1a; color:var(--signal-green); border:1px solid var(--signal-green); border-radius:6px; padding:10px 14px; font-size:0.95rem; width:100%; max-width:520px; letter-spacing:0.5px;">
+            <button type="button" class="btn btn-primary btn-sm" id="btn-copy-new-key"><i class="fa-solid fa-copy"></i> Copy Key</button>
+          </div>
+          <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-muted);">
+            Example: <code style="color:var(--text-main); background:rgba(0,0,0,0.4); padding:3px 8px; border-radius:4px;">curl -H "Authorization: Bearer <span id="example-key-slug">cps_...</span>" https://cyberport-scanner.onrender.com/api/v1/health</code>
+          </div>
+        </div>
+        <button type="button" id="btn-dismiss-key-alert" aria-label="Close" style="background:transparent; border:none; color:var(--text-muted); cursor:pointer; font-size:1.1rem;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+    </div>
+
+    <!-- Key Creation Form & List -->
+    <div class="glass-card scan-panel reveal delay-2" style="margin-bottom:30px;">
+      <div class="scan-panel-head" style="justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i class="fa-solid fa-key" style="color:var(--signal-green);"></i>
+          <h2 style="margin:0;">API Keys Management</h2>
+        </div>
+        <div>
+          <button type="button" class="btn btn-primary btn-sm" id="btn-show-key-form"><i class="fa-solid fa-plus"></i> Generate New Key</button>
+        </div>
+      </div>
+
+      <!-- Key Creation Input (Toggled) -->
+      <div id="key-create-box" style="display:none; padding:18px 24px; background:rgba(0,0,0,0.3); border-bottom:1px solid rgba(255,255,255,0.06);">
+        <form id="create-key-form" style="display:flex; align-items:flex-end; gap:14px; flex-wrap:wrap;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <div style="flex:1; min-width:240px;">
+            <label for="key-name-input" style="display:block; font-size:0.85rem; color:var(--text-muted); margin-bottom:6px;">Key Name / Description</label>
+            <input type="text" id="key-name-input" class="form-input" placeholder="e.g. CI Scanner, Production CLI, Local Lab" maxlength="64" required autocomplete="off">
+          </div>
+          <button type="submit" class="btn btn-primary" id="btn-submit-create-key"><i class="fa-solid fa-shield-check"></i> Generate</button>
+          <button type="button" class="btn btn-outline" id="btn-cancel-key-create">Cancel</button>
+        </form>
+      </div>
+
+      <!-- Keys Table -->
+      <div class="results-table-wrap" style="padding:10px 0;">
+        <table class="results-table" id="keys-table" style="margin:0;">
+          <thead>
+            <tr>
+              <th>Key Name</th>
+              <th>API Key (Masked)</th>
+              <th>Created Date</th>
+              <th>Last Used</th>
+              <th>Status</th>
+              <th style="text-align:right;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="keys-tbody">
+            <tr>
+              <td colspan="6" style="text-align:center; padding:30px; color:var(--text-muted);">
+                <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i> Loading API keys…
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="keys-empty-state" class="empty-state" style="display:none; padding:40px 20px;">
+          <i class="fa-solid fa-key" style="opacity:0.4; font-size:2rem; margin-bottom:12px;"></i>
+          <div>No API keys generated yet. Click "Generate New Key" to create your first key.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Reference Card -->
+    <div class="glass-card reveal delay-3" style="padding:28px;">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <i class="fa-solid fa-terminal" style="color:var(--signal-green);"></i>
+        <h3 style="margin:0; font-family:var(--font-ui);">Quick Start Examples</h3>
+      </div>
+      <div class="presets-row" style="margin-bottom:16px;">
+        <button type="button" class="preset-chip active" id="tab-curl-health">Health Check</button>
+        <button type="button" class="preset-chip" id="tab-curl-scan">Start Scan</button>
+        <button type="button" class="preset-chip" id="tab-curl-status">Get Status</button>
+        <button type="button" class="preset-chip" id="tab-curl-ports">Port Info</button>
+      </div>
+      <div style="position:relative; background:#040913; border:1px solid rgba(0,255,204,0.2); border-radius:8px; padding:16px 20px;">
+        <pre id="quickstart-code" style="margin:0; font-family:var(--font-mono); font-size:0.85rem; color:var(--signal-green); overflow-x:auto;">curl -X GET https://cyberport-scanner.onrender.com/api/v1/health</pre>
+        <button type="button" class="btn btn-outline btn-sm" id="btn-copy-example" style="position:absolute; top:12px; right:12px; padding:4px 10px; font-size:0.75rem;"><i class="fa-regular fa-copy"></i> Copy</button>
+      </div>
+      <div style="margin-top:14px; font-size:0.85rem; color:var(--text-muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+        <span>Safety Restriction: <b>PRIVATE_TARGETS_ONLY=true</b> (RFC 1918 &amp; Loopback targets only).</span>
+        <span>Max port range: <b>1024 ports</b> per scan.</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/developer.js') }}"></script>
+{% endblock %}
