@@ -181,3 +181,40 @@ async function apiRequest(url, options = {}) {
   }
 }
 window.apiRequest = apiRequest;
+
+// ---------------------------------------------------------------------
+// Code Showcase Tabs & Copy to Clipboard
+// ---------------------------------------------------------------------
+(function initCodeShowcase() {
+  document.querySelectorAll('.api-tab-chip').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.getAttribute('data-tab');
+      const container = tab.closest('.api-showcase-box') || document;
+      container.querySelectorAll('.api-tab-chip').forEach((t) => t.classList.remove('active'));
+      container.querySelectorAll('.api-code-snippet').forEach((c) => c.classList.remove('active'));
+      tab.classList.add('active');
+      const targetSnippet = document.getElementById(targetId);
+      if (targetSnippet) targetSnippet.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.api-copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const targetSelector = btn.getAttribute('data-target');
+      const codeEl = document.querySelector(targetSelector);
+      if (!codeEl) return;
+      const text = codeEl.innerText || codeEl.textContent;
+      try {
+        await navigator.clipboard.writeText(text);
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        setTimeout(() => {
+          btn.innerHTML = originalHtml;
+        }, 2000);
+      } catch (e) {
+        if (window.Toast) Toast.show('Copied text fallback', 'info');
+      }
+    });
+  });
+})();
+

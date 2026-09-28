@@ -287,3 +287,769 @@ table.results-table { width: 100%; border-collapse: collapse; font-family: var(-
   .history-row { grid-template-columns: 1fr; }
   .history-actions-cell { justify-content: flex-start; }
 }
+
+/* =====================================================================
+   MODERN CYBERSECURITY SAAS LANDING PAGE REDESIGN
+   ===================================================================== */
+
+/* ---------- Hero SaaS Section ---------- */
+.hero-saas {
+  position: relative;
+  padding: 50px 0 70px;
+  overflow: hidden;
+}
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr;
+  gap: 52px;
+  align-items: center;
+}
+.hero-content {
+  text-align: left;
+}
+.hero-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.badge-security {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 255, 157, 0.08);
+  border: 1px solid rgba(0, 255, 157, 0.32);
+  color: var(--signal-green);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 229, 255, 0.08);
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  color: var(--signal-cyan);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+}
+.badge-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--signal-green);
+  box-shadow: 0 0 8px var(--signal-green);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+.hero-h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.3rem, 4.2vw, 3.7rem);
+  font-weight: 900;
+  line-height: 1.16;
+  letter-spacing: 0.5px;
+  margin-bottom: 22px;
+  color: #ffffff;
+}
+.hero-h1 .text-gradient {
+  background: linear-gradient(90deg, var(--signal-green) 0%, var(--signal-cyan) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-p {
+  font-size: 1.08rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 580px;
+  margin-bottom: 34px;
+}
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+.btn-hero {
+  padding: 15px 32px;
+  font-size: 1rem;
+}
+.hero-safety-subtext {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.hero-safety-subtext span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- Hero Interactive Scanner Demo Mockup ---------- */
+.hero-demo-wrapper {
+  position: relative;
+}
+.demo-mockup-frame {
+  background: rgba(6, 14, 18, 0.82);
+  border: 1px solid rgba(0, 255, 157, 0.28);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 255, 157, 0.08);
+  backdrop-filter: blur(20px);
+  position: relative;
+}
+.demo-sweep-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--signal-green), var(--signal-cyan), transparent);
+  animation: sweepLine 3s linear infinite;
+  z-index: 5;
+}
+@keyframes sweepLine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.demo-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.demo-window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.demo-title-text {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+.demo-status-pill {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: rgba(0, 255, 157, 0.12);
+  border: 1px solid rgba(0, 255, 157, 0.35);
+  color: var(--signal-green);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.demo-body {
+  padding: 20px 22px;
+}
+.demo-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.demo-meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.demo-meta-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.demo-meta-val {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: #fff;
+  font-weight: 600;
+}
+.demo-meta-val.green {
+  color: var(--signal-green);
+}
+
+.demo-progress-box {
+  margin-bottom: 18px;
+}
+.demo-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.demo-progress-track {
+  height: 5px;
+  background: rgba(0, 255, 157, 0.12);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.demo-progress-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--signal-green), var(--signal-cyan));
+  box-shadow: 0 0 10px var(--signal-green);
+}
+
+.demo-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+.demo-table th {
+  text-align: left;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.demo-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  transition: background 0.2s;
+}
+.demo-table tr:hover td {
+  background: rgba(0, 255, 157, 0.05);
+}
+.demo-badge-open {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--signal-green);
+  background: rgba(0, 255, 157, 0.12);
+  border: 1px solid rgba(0, 255, 157, 0.35);
+}
+.demo-badge-closed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--alert-magenta);
+  background: rgba(255, 47, 126, 0.08);
+  border: 1px solid rgba(255, 47, 126, 0.25);
+}
+.demo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 18px;
+  background: rgba(0, 0, 0, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Trust & Capability Strip ---------- */
+.trust-strip-container {
+  margin: -10px 0 70px;
+}
+.trust-strip-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 18px 28px;
+  border-radius: 12px;
+  background: rgba(6, 14, 18, 0.7);
+  border: 1px solid rgba(0, 255, 157, 0.18);
+  backdrop-filter: blur(14px);
+}
+.trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+  transition: all 0.25s var(--ease-out);
+}
+.trust-item i {
+  color: var(--signal-green);
+  font-size: 0.95rem;
+  transition: transform 0.25s;
+}
+.trust-item:hover {
+  color: var(--signal-cyan);
+  transform: translateY(-2px);
+}
+.trust-item:hover i {
+  transform: scale(1.15);
+}
+
+/* ---------- Modern SaaS Feature Cards ---------- */
+.saas-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.saas-feature-card {
+  padding: 32px 28px;
+  border-radius: 14px;
+  background: rgba(8, 18, 22, 0.55);
+  border: 1px solid rgba(0, 255, 157, 0.15);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.35s var(--ease-out);
+}
+.saas-feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--signal-green), transparent);
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.saas-feature-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(0, 255, 157, 0.45);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.5), 0 0 24px rgba(0,255,157,0.12);
+}
+.saas-feature-card:hover::before {
+  opacity: 1;
+}
+.saas-feature-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 255, 157, 0.08);
+  border: 1px solid rgba(0, 255, 157, 0.3);
+  color: var(--signal-green);
+  font-size: 1.35rem;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+}
+.saas-feature-card:hover .saas-feature-icon {
+  background: var(--signal-green);
+  color: #030d08;
+  box-shadow: 0 0 22px rgba(0,255,157,0.6);
+}
+.saas-feature-title {
+  font-family: var(--font-ui);
+  font-weight: 700;
+  font-size: 1.15rem;
+  margin-bottom: 10px;
+  color: #fff;
+}
+.saas-feature-desc {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+/* ---------- Workflow Steps Section ---------- */
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  position: relative;
+}
+.workflow-card {
+  padding: 34px 28px;
+  border-radius: 14px;
+  background: rgba(8, 18, 22, 0.55);
+  border: 1px solid rgba(0, 255, 157, 0.15);
+  position: relative;
+  transition: all 0.3s var(--ease-out);
+}
+.workflow-card:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.4);
+}
+.workflow-step-num {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--signal-cyan);
+  text-shadow: 0 0 16px rgba(0, 229, 255, 0.35);
+  margin-bottom: 12px;
+}
+.workflow-title {
+  font-family: var(--font-ui);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: #fff;
+}
+.workflow-desc {
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+/* ---------- Security-First Pillars Grid ---------- */
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+.security-card {
+  padding: 28px 24px;
+  border-radius: 12px;
+  background: rgba(7, 16, 20, 0.6);
+  border: 1px solid rgba(0, 255, 157, 0.15);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: all 0.3s var(--ease-out);
+}
+.security-card:hover {
+  border-color: rgba(0, 255, 157, 0.35);
+  background: rgba(9, 20, 26, 0.75);
+  transform: translateY(-3px);
+}
+.security-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 255, 157, 0.08);
+  border: 1px solid rgba(0, 255, 157, 0.25);
+  color: var(--signal-green);
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.security-card-content h3 {
+  font-family: var(--font-ui);
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #fff;
+}
+.security-card-content p {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ---------- Developer / REST API Section ---------- */
+.api-showcase-box {
+  padding: 38px 36px;
+  border-radius: 16px;
+  background: rgba(6, 14, 18, 0.7);
+  border: 1px solid rgba(0, 255, 157, 0.2);
+}
+.api-showcase-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 40px;
+  align-items: center;
+}
+.api-tabs-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.api-tab-chip {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.api-tab-chip.active, .api-tab-chip:hover {
+  color: var(--signal-green);
+  background: rgba(0, 255, 157, 0.08);
+  border-color: rgba(0, 255, 157, 0.35);
+}
+.api-code-terminal {
+  position: relative;
+  background: #03070d;
+  border: 1px solid rgba(0, 255, 157, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.api-code-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.api-copy-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+.api-copy-btn:hover {
+  color: var(--signal-green);
+  border-color: var(--signal-green);
+  background: rgba(0, 255, 157, 0.08);
+}
+.api-code-snippet {
+  display: none;
+}
+.api-code-snippet.active {
+  display: block;
+}
+.api-code-pre {
+  margin: 0;
+  padding: 18px 20px;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  color: var(--signal-green);
+  line-height: 1.65;
+  overflow-x: auto;
+}
+
+/* Workflow step connectors on desktop */
+.workflow-card {
+  position: relative;
+}
+@media (min-width: 1025px) {
+  .workflow-card:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.6rem;
+    color: var(--signal-cyan);
+    opacity: 0.7;
+    z-index: 2;
+    text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+  }
+}
+
+/* ---------- Platform Metrics Strip ---------- */
+.metrics-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.metric-card {
+  padding: 26px 20px;
+  text-align: center;
+  border-radius: 12px;
+  background: rgba(6, 14, 18, 0.6);
+  border: 1px solid rgba(0, 255, 157, 0.15);
+  transition: all 0.25s var(--ease-out);
+}
+.metric-card:hover {
+  border-color: rgba(0, 255, 157, 0.35);
+  transform: translateY(-3px);
+}
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--signal-green);
+  text-shadow: 0 0 16px rgba(0, 255, 157, 0.35);
+  margin-bottom: 6px;
+}
+.metric-label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 1.5px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* ---------- CLI Terminal Visual ---------- */
+.cli-box {
+  max-width: 820px;
+  margin: 0 auto;
+}
+.cli-terminal {
+  background: #04080c;
+  border: 1px solid rgba(0, 255, 157, 0.25);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 30px rgba(0, 255, 157, 0.05);
+}
+.cli-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.cli-body {
+  padding: 22px 26px;
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  line-height: 1.85;
+  color: var(--text-secondary);
+}
+.cli-prompt {
+  color: var(--signal-cyan);
+}
+.cli-cmd {
+  color: #fff;
+  font-weight: 600;
+}
+.cli-info {
+  color: var(--text-muted);
+}
+.cli-open {
+  color: var(--signal-green);
+  font-weight: 600;
+}
+.cli-done {
+  color: var(--signal-cyan);
+  font-weight: 700;
+}
+
+/* ---------- Final SaaS CTA Section ---------- */
+.final-cta-card {
+  text-align: center;
+  padding: 64px 32px;
+  border-radius: 18px;
+  background: radial-gradient(circle at 50% 0%, rgba(0, 255, 157, 0.12) 0%, rgba(6, 14, 18, 0.8) 75%);
+  border: 1px solid rgba(0, 255, 157, 0.3);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(0, 255, 157, 0.08);
+}
+.final-cta-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.8vw, 3rem);
+  font-weight: 900;
+  margin-bottom: 16px;
+  color: #fff;
+}
+.final-cta-sub {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+  max-width: 600px;
+  margin: 0 auto 32px;
+}
+
+/* ---------- Responsive Breakpoints for Redesign ---------- */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .hero-content {
+    text-align: center;
+  }
+  .hero-badge-row {
+    justify-content: center;
+  }
+  .hero-p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .hero-cta-group {
+    justify-content: center;
+  }
+  .hero-safety-subtext {
+    justify-content: center;
+  }
+  .api-showcase-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .saas-features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .workflow-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .security-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .metrics-strip-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .trust-strip-bar {
+    justify-content: center;
+    gap: 12px;
+  }
+  .trust-item {
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .saas-features-grid {
+    grid-template-columns: 1fr;
+  }
+  .workflow-grid {
+    grid-template-columns: 1fr;
+  }
+  .security-grid {
+    grid-template-columns: 1fr;
+  }
+  .metrics-strip-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  .hero-cta-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .api-showcase-box {
+    padding: 24px 18px;
+  }
+  .final-cta-card {
+    padding: 44px 20px;
+  }
+}
+
