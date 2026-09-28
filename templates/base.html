@@ -50,10 +50,13 @@
     <div class="loader-status">initializing secure session…</div>
   </div>
 
-  <!-- Ambient background layers -->
-  <canvas id="matrix-canvas"></canvas>
-  <div class="grid-overlay"></div>
-  <div class="scanlines"></div>
+  <!-- Ambient background layers (matching homepage) -->
+  <canvas id="matrix-canvas" style="display:none;"></canvas>
+  <div class="fixed-glow-backdrop" aria-hidden="true">
+    <div class="glow-orb glow-top-left"></div>
+    <div class="glow-orb glow-mid-right"></div>
+    <div class="glow-orb glow-bottom-left"></div>
+  </div>
 
   <!-- Header -->
   <header class="site-header">
