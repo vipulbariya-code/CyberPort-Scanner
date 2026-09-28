@@ -220,7 +220,7 @@ def create_app(env=None):
         # Content Security Policy safe for all templates and external CDN assets
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; "
             "img-src 'self' data: https:; "

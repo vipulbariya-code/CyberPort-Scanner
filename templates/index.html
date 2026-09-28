@@ -1,561 +1,784 @@
-{% extends "base.html" %}
-{% block title %}CyberPort Scanner — Secure Network Reconnaissance & Authorized Port Scanner{% endblock %}
-{% block description %}CyberPort Scanner is a modern cybersecurity SaaS platform and developer tool for authorized network reconnaissance, port scanning, and API integration.{% endblock %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberPort Scanner | Secure Network Reconnaissance</title>
+    <meta name="description" content="CyberPort Scanner is a modern cybersecurity SaaS platform and developer tool for authorized network reconnaissance, port scanning, and API integration.">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="Vipul Bariya">
+    <link rel="canonical" href="https://cyberport-scanner.onrender.com/">
+    <meta property="og:title" content="CyberPort Scanner | Secure Network Reconnaissance">
+    <meta property="og:description" content="Professional network port scanner for educational & authorized security testing.">
+    <meta property="og:url" content="https://cyberport-scanner.onrender.com/">
+    <meta property="og:type" content="website">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-{% block content %}
+    <!-- Brand Favicons & App Icons -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/cyberport-og.png', _external=True) }}">
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        cyber: {
+                            900: '#050810',
+                            800: '#0f172a',
+                            700: '#1e293b',
+                            accent: '#06b6d4',
+                            accentHover: '#0891b2',
+                            card: 'rgba(15, 23, 42, 0.6)'
+                        }
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
-<!-- ================= HERO SECTION ================= -->
-<section class="hero-saas">
-  <div class="container">
-    <div class="hero-grid">
-      <!-- Left Column: Copy & CTAs -->
-      <div class="hero-content reveal">
-        <div class="hero-badge-row">
-          <span class="badge-security">
-            <i class="fa-solid fa-shield-halved"></i> Authorized Security Tool
-          </span>
-          <span class="badge-security" style="border-color: rgba(0, 229, 255, 0.35); color: var(--signal-cyan);">
-            <i class="fa-solid fa-lock"></i> Private Targets Only
-          </span>
-          <span class="badge-status">
-            <span class="badge-status-dot"></span> Scanner Engine Online
-          </span>
-        </div>
+    <style>
+        :root {
+            --grid-color: rgba(6, 182, 212, 0.05);
+        }
 
-        <h1 class="hero-h1">
-          Secure Network Reconnaissance, Built for <span class="text-gradient">Authorized Testing</span>
-        </h1>
+        body {
+            background-color: #050810;
+            color: #f3f4f6;
+            overflow-x: hidden;
+            background-image: 
+                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-attachment: fixed;
+        }
 
-        <p class="hero-p">
-          CyberPort Scanner helps security learners, developers and authorized testers discover open ports, identify services and analyze network exposure through a secure and easy-to-use interface.
-        </p>
+        .glass {
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
-        <div class="hero-cta-group">
-          <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-hero">
-            <i class="fa-solid fa-bolt"></i> Start Scanning
-          </a>
-          <a href="{{ url_for('main.api_docs') }}" class="btn btn-outline btn-hero">
-            <i class="fa-solid fa-code"></i> Explore API
-          </a>
-        </div>
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(6, 182, 212, 0.1);
+            transition: all 0.3s ease;
+        }
 
-        <div class="hero-safety-subtext">
-          <span><i class="fa-solid fa-circle-check text-green"></i> RFC 1918 Enforced</span>
-          <span><i class="fa-solid fa-circle-check text-green"></i> No Attack Vectors</span>
-          <span><i class="fa-solid fa-circle-check text-green"></i> 100% Educational</span>
-        </div>
-      </div>
+        .glass-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
+            transform: translateY(-2px);
+        }
 
-      <!-- Right Column: Interactive Scanner Demo Mockup -->
-      <div class="hero-demo-wrapper reveal delay-2">
-        <div class="demo-mockup-frame">
-          <div class="demo-sweep-line"></div>
-          
-          <div class="demo-topbar">
-            <div class="demo-window-controls">
-              <span class="terminal-dot red"></span>
-              <span class="terminal-dot yellow"></span>
-              <span class="terminal-dot green"></span>
-              <span class="demo-title-text">TARGET // 192.168.1.10</span>
+        .text-gradient {
+            background: linear-gradient(to right, #ffffff, #a5f3fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .scanner-container {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #06b6d4;
+            box-shadow: 0 0 15px 3px rgba(6, 182, 212, 0.6);
+            animation: scan 3s linear infinite;
+            z-index: 10;
+        }
+
+        @keyframes scan {
+            0% { top: -5%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 105%; opacity: 0; }
+        }
+
+        .typing-cursor::after {
+            content: '█';
+            animation: blink 1s step-start infinite;
+            color: #06b6d4;
+            margin-left: 4px;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal, .scan-line, .animate-float, .typing-cursor::after {
+                animation: none;
+                transition: none;
+                opacity: 1;
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-cyber-accent selection:text-white">
+
+    <nav class="fixed w-full z-50 glass border-b border-gray-800/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo / Brand -->
+                <a href="{{ url_for('main.home') }}" class="flex-shrink-0 flex items-center gap-3 cursor-pointer">
+                    <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Scanner Logo" class="brand-symbol w-8 h-8 rounded shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                    <span class="font-bold text-xl tracking-tight text-white">CyberPort <span class="brand-tag text-cyber-accent text-sm font-semibold tracking-wider">SCANNER</span></span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="{{ url_for('main.home') }}" class="text-cyber-accent font-medium transition-colors">Home</a>
+                    <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white transition-colors">Scanner</a>
+                    <a href="{{ url_for('main.history') }}" class="text-gray-300 hover:text-white transition-colors">History</a>
+                    <a href="{{ url_for('main.developer') }}" class="text-gray-300 hover:text-white transition-colors">Developer API</a>
+                    <a href="{{ url_for('main.api_docs') }}" class="text-gray-300 hover:text-white transition-colors">API Docs</a>
+                </div>
+
+                <!-- Right Side Actions -->
+                <div class="hidden md:flex items-center space-x-4">
+                    {% if session.get('user_id') %}
+                        <span class="text-gray-300 text-sm font-medium"><i class="fa-regular fa-user mr-1 text-cyber-accent"></i> {{ session.get('username') }}</span>
+                        <form action="{{ url_for('main.logout') }}" method="post" class="inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="text-gray-300 hover:text-red-400 font-medium text-sm transition-colors">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="{{ url_for('main.login') }}" class="text-gray-300 hover:text-white font-medium transition-colors">Login</a>
+                    {% endif %}
+                    <a href="{{ url_for('main.dashboard') }}" class="bg-cyber-accent hover:bg-cyber-accentHover text-white px-5 py-2 rounded-md text-sm font-semibold transition-all shadow-[0_0_10px_rgba(6,182,212,0.3)] hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                        Start Scanning
+                    </a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none p-2" aria-label="Toggle menu">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
             </div>
-            <span class="demo-status-pill">
-              <span class="badge-status-dot"></span> SCANNING
-            </span>
-          </div>
+        </div>
 
-          <div class="demo-body">
-            <div class="demo-meta-grid">
-              <div class="demo-meta-item">
-                <span class="demo-meta-label">Target IP</span>
-                <span class="demo-meta-val">192.168.1.10</span>
-              </div>
-              <div class="demo-meta-item">
-                <span class="demo-meta-label">Port Range</span>
-                <span class="demo-meta-val">1 - 1024</span>
-              </div>
-              <div class="demo-meta-item">
-                <span class="demo-meta-label">Concurrency</span>
-                <span class="demo-meta-val green">100 Threads</span>
-              </div>
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden glass border-t border-gray-800/50">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="{{ url_for('main.home') }}" class="block px-3 py-2 text-cyber-accent font-medium">Home</a>
+                <a href="{{ url_for('main.dashboard') }}" class="block px-3 py-2 text-gray-300 hover:text-white">Scanner</a>
+                <a href="{{ url_for('main.history') }}" class="block px-3 py-2 text-gray-300 hover:text-white">History</a>
+                <a href="{{ url_for('main.developer') }}" class="block px-3 py-2 text-gray-300 hover:text-white">Developer API</a>
+                <a href="{{ url_for('main.api_docs') }}" class="block px-3 py-2 text-gray-300 hover:text-white">API Docs</a>
+                <div class="border-t border-gray-800 my-2"></div>
+                {% if session.get('user_id') %}
+                    <span class="block px-3 py-2 text-gray-300 font-medium"><i class="fa-regular fa-user mr-1 text-cyber-accent"></i> {{ session.get('username') }}</span>
+                    <form action="{{ url_for('main.logout') }}" method="post" class="px-3 py-1">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="text-gray-300 hover:text-red-400 font-medium">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{{ url_for('main.login') }}" class="block px-3 py-2 text-gray-300 hover:text-white">Login</a>
+                {% endif %}
+                <a href="{{ url_for('main.dashboard') }}" class="block px-3 py-2 mt-2 text-center bg-cyber-accent text-white rounded-md font-semibold">Start Scanning</a>
             </div>
+        </div>
+    </nav>
 
-            <div class="demo-progress-box">
-              <div class="demo-progress-meta">
-                <span>TCP Three-Way Handshake</span>
-                <span class="text-green">Analyzing 1024 ports</span>
-              </div>
-              <div class="demo-progress-track">
-                <div class="demo-progress-fill"></div>
-              </div>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24" aria-live="polite">
+              {% for category, message in messages %}
+                <div class="p-4 mb-4 rounded-lg bg-cyber-800 border border-cyber-accent/30 text-white flex items-center justify-between">
+                  <span>{{ message }}</span>
+                </div>
+              {% endfor %}
             </div>
+          {% endif %}
+        {% endwith %}
 
-            <table class="demo-table">
-              <thead>
-                <tr>
-                  <th>Port</th>
-                  <th>Service</th>
-                  <th>Protocol</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>22</code></td>
-                  <td>SSH</td>
-                  <td>TCP</td>
-                  <td><span class="demo-badge-open"><i class="fa-solid fa-circle-dot"></i> OPEN</span></td>
-                </tr>
-                <tr>
-                  <td><code>80</code></td>
-                  <td>HTTP</td>
-                  <td>TCP</td>
-                  <td><span class="demo-badge-open"><i class="fa-solid fa-circle-dot"></i> OPEN</span></td>
-                </tr>
-                <tr>
-                  <td><code>443</code></td>
-                  <td>HTTPS</td>
-                  <td>TCP</td>
-                  <td><span class="demo-badge-open"><i class="fa-solid fa-circle-dot"></i> OPEN</span></td>
-                </tr>
-                <tr>
-                  <td><code>3306</code></td>
-                  <td>MySQL</td>
-                  <td>TCP</td>
-                  <td><span class="demo-badge-closed"><i class="fa-solid fa-xmark"></i> CLOSED</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <!-- Hero Section -->
+        <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    
+                    <!-- Hero Content -->
+                    <div class="reveal">
+                        <div class="flex flex-wrap items-center gap-2 mb-6">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyber-accent/10 border border-cyber-accent/20 text-cyber-accent text-xs font-semibold tracking-wide">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                AUTHORIZED SECURITY TOOL
+                            </div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyber-accent/10 border border-cyber-accent/20 text-cyber-accent text-xs font-semibold tracking-wide">
+                                <i class="fa-solid fa-lock"></i>
+                                PRIVATE TARGETS ONLY
+                            </div>
+                        </div>
+                        
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6 text-gradient">
+                            Secure Network Reconnaissance, Built for Authorized Testing
+                        </h1>
+                        
+                        <p class="text-lg text-gray-400 mb-8 max-w-xl leading-relaxed">
+                            CyberPort Scanner helps security learners, developers and authorized testers discover open ports, identify services and analyze network exposure through a secure and easy-to-use interface.
+                        </p>
+                        
+                        <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                            <a href="{{ url_for('main.dashboard') }}" class="flex items-center justify-center gap-2 bg-cyber-accent hover:bg-cyber-accentHover text-white px-8 py-3.5 rounded-md font-semibold transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                                <i class="fa-solid fa-play text-sm"></i>
+                                Start Scanning
+                            </a>
+                            <a href="{{ url_for('main.api_docs') }}" class="flex items-center justify-center gap-2 border border-gray-600 hover:border-cyber-accent text-gray-300 hover:text-white px-8 py-3.5 rounded-md font-semibold transition-all hover:bg-cyber-accent/5">
+                                <i class="fa-solid fa-code text-sm"></i>
+                                Explore API
+                            </a>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 text-sm text-gray-400 font-medium">
+                            <span class="flex h-3 w-3 relative">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                            </span>
+                            Scanner Engine Online
+                        </div>
+                    </div>
 
-          <div class="demo-footer">
-            <span><i class="fa-solid fa-shield-halved text-green"></i> Private Lab Verified</span>
-            <span>Elapsed: <strong>1.84s</strong></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= TRUST / CAPABILITY STRIP ================= -->
-<div class="container trust-strip-container reveal delay-1">
-  <div class="trust-strip-bar">
-    <div class="trust-item"><i class="fa-solid fa-key"></i> API Key Authentication</div>
-    <div class="trust-item"><i class="fa-solid fa-shield-halved"></i> Private Target Protection</div>
-    <div class="trust-item"><i class="fa-solid fa-bolt"></i> Real-Time Scanning</div>
-    <div class="trust-item"><i class="fa-solid fa-clock-rotate-left"></i> Scan History</div>
-    <div class="trust-item"><i class="fa-solid fa-file-csv"></i> CSV Export</div>
-    <div class="trust-item"><i class="fa-solid fa-code"></i> REST API v1</div>
-  </div>
-</div>
-
-<!-- ================= PLATFORM METRICS & STATS ================= -->
-<section class="page-section tight">
-  <div class="container">
-    <div class="section-head center reveal">
-      <div class="section-kicker">system architecture</div>
-      <h2 class="section-title">Engine <span class="text-gradient">Specifications</span></h2>
-    </div>
-
-    <div class="metrics-strip-grid reveal delay-1">
-      <div class="metric-card">
-        <div class="metric-value">ACTIVE</div>
-        <div class="metric-label">Scanning Engine</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" style="color:var(--signal-cyan);">v1.0</div>
-        <div class="metric-label">REST API Version</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value">RFC 1918</div>
-        <div class="metric-label">Security Policy</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-value" style="color:var(--signal-cyan);">1,024</div>
-        <div class="metric-label">Max Port Window</div>
-      </div>
-    </div>
-
-    <!-- Live Aggregated Statistics from Database -->
-    <div class="stats-grid" style="margin-top: 24px;">
-      <div class="glass-card stat-card reveal">
-        <div class="stat-value" data-stat="total_scans">0</div>
-        <div class="stat-label">Total Scans Run</div>
-      </div>
-      <div class="glass-card stat-card reveal delay-1">
-        <div class="stat-value" data-stat="total_open_ports">0</div>
-        <div class="stat-label">Open Ports Found</div>
-      </div>
-      <div class="glass-card stat-card reveal delay-2">
-        <div class="stat-value" data-stat="total_closed_ports">0</div>
-        <div class="stat-label">Closed Ports Checked</div>
-      </div>
-      <div class="glass-card stat-card reveal delay-3">
-        <div class="stat-value" data-stat="avg_duration">0</div>
-        <div class="stat-label">Avg. Scan Time (s)</div>
-      </div>
-    </div>
-
-    <div class="glass-card reveal delay-4" style="margin-top:22px; padding:24px; max-width:440px; margin-left:auto; margin-right:auto; border-radius:14px;">
-      <div style="height:210px;"><canvas id="home-stats-chart"></canvas></div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= FEATURES SECTION ================= -->
-<section class="page-section" id="features">
-  <div class="container">
-    <div class="section-head center reveal">
-      <div class="section-kicker">core capabilities</div>
-      <h2 class="section-title">Everything You Need for <span class="text-gradient">Network Reconnaissance</span></h2>
-      <p class="section-sub" style="margin: 0 auto; max-width:620px;">
-        A comprehensive toolset engineered for precision TCP discovery, service fingerprinting, and developer automation.
-      </p>
-    </div>
-
-    <div class="saas-features-grid">
-      <!-- Feature 1 -->
-      <div class="saas-feature-card reveal">
-        <div class="saas-feature-icon"><i class="fa-solid fa-network-wired"></i></div>
-        <h3 class="saas-feature-title">Real-Time Port Scanning</h3>
-        <p class="saas-feature-desc">Discover accessible ports and identify running services using high-concurrency TCP socket connections.</p>
-      </div>
-
-      <!-- Feature 2 -->
-      <div class="saas-feature-card reveal delay-1">
-        <div class="saas-feature-icon"><i class="fa-solid fa-fingerprint"></i></div>
-        <h3 class="saas-feature-title">Service Identification</h3>
-        <p class="saas-feature-desc">Understand what services are associated with discovered ports with automatic IANA service resolution.</p>
-      </div>
-
-      <!-- Feature 3 -->
-      <div class="saas-feature-card reveal delay-2">
-        <div class="saas-feature-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
-        <h3 class="saas-feature-title">Scan History</h3>
-        <p class="saas-feature-desc">Review previous authorized scans from your account with persistent storage, filtering, and audit trails.</p>
-      </div>
-
-      <!-- Feature 4 -->
-      <div class="saas-feature-card reveal">
-        <div class="saas-feature-icon"><i class="fa-solid fa-code"></i></div>
-        <h3 class="saas-feature-title">Secure REST API</h3>
-        <p class="saas-feature-desc">Integrate CyberPort Scanner with external applications and automated pipelines using the versioned REST API.</p>
-      </div>
-
-      <!-- Feature 5 -->
-      <div class="saas-feature-card reveal delay-1">
-        <div class="saas-feature-icon"><i class="fa-solid fa-key"></i></div>
-        <h3 class="saas-feature-title">Developer API Keys</h3>
-        <p class="saas-feature-desc">Generate, manage and revoke authenticated API keys with secure SHA-256 cryptographic hashing.</p>
-      </div>
-
-      <!-- Feature 6 -->
-      <div class="saas-feature-card reveal delay-2">
-        <div class="saas-feature-icon"><i class="fa-solid fa-file-csv"></i></div>
-        <h3 class="saas-feature-title">CSV Export</h3>
-        <p class="saas-feature-desc">Export scan results for analysis and documentation with built-in spreadsheet formula injection defense.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= HOW IT WORKS ================= -->
-<section class="page-section tight" id="how-it-works">
-  <div class="container">
-    <div class="section-head center reveal">
-      <div class="section-kicker">workflow</div>
-      <h2 class="section-title">How It <span class="text-gradient">Works</span></h2>
-      <p class="section-sub" style="margin: 0 auto;">Streamlined network reconnaissance in three straightforward steps.</p>
-    </div>
-
-    <div class="workflow-grid reveal delay-1">
-      <div class="workflow-card">
-        <div class="workflow-step-num">01</div>
-        <h3 class="workflow-title">Enter Target</h3>
-        <p class="workflow-desc">Provide an authorized private/lab target. The validator automatically confirms RFC 1918 or loopback scope.</p>
-      </div>
-
-      <div class="workflow-card">
-        <div class="workflow-step-num">02</div>
-        <h3 class="workflow-title">Scan</h3>
-        <p class="workflow-desc">CyberPort Scanner analyzes the requested ports concurrently using non-blocking TCP socket workers.</p>
-      </div>
-
-      <div class="workflow-card">
-        <div class="workflow-step-num">03</div>
-        <h3 class="workflow-title">Analyze Results</h3>
-        <p class="workflow-desc">Review discovered ports, services and scan information through interactive dashboards or export to CSV.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= SECURITY-FIRST SECTION ================= -->
-<section class="page-section" id="security-first">
-  <div class="container">
-    <div class="section-head center reveal">
-      <div class="section-kicker">built for responsibility</div>
-      <h2 class="section-title">Security <span class="text-gradient">Comes First</span></h2>
-      <p class="section-sub" style="margin: 0 auto; max-width:620px;">
-        Designed from the ground up for authorized research. Every scan is protected by active security controls.
-      </p>
-    </div>
-
-    <div class="security-grid">
-      <div class="security-card reveal">
-        <div class="security-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="security-card-content">
-          <h3>Private Target Restrictions</h3>
-          <p>Scans are restricted by default to authorized RFC 1918 private subnets and localhost to prevent abuse.</p>
-        </div>
-      </div>
-
-      <div class="security-card reveal delay-1">
-        <div class="security-icon"><i class="fa-solid fa-network-wired"></i></div>
-        <div class="security-card-content">
-          <h3>RFC 1918 &amp; Loopback Protection</h3>
-          <p>Target IPs are verified against standard private blocks (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.1).</p>
-        </div>
-      </div>
-
-      <div class="security-card reveal delay-2">
-        <div class="security-icon"><i class="fa-solid fa-key"></i></div>
-        <div class="security-card-content">
-          <h3>API Key Authentication</h3>
-          <p>High-entropy Bearer tokens hashed with SHA-256 in the database protect all REST API v1 endpoints.</p>
-        </div>
-      </div>
-
-      <div class="security-card reveal">
-        <div class="security-icon"><i class="fa-solid fa-gauge-high"></i></div>
-        <div class="security-card-content">
-          <h3>Rate Limiting &amp; Concurrency</h3>
-          <p>Sliding-window IP throttles and atomic concurrency locks restrict each user to one active scan at a time.</p>
-        </div>
-      </div>
-
-      <div class="security-card reveal delay-1">
-        <div class="security-icon"><i class="fa-solid fa-user-lock"></i></div>
-        <div class="security-card-content">
-          <h3>User-Level Access Control</h3>
-          <p>Strict IDOR protection guarantees scan history, results, and generated API keys remain isolated per user.</p>
-        </div>
-      </div>
-
-      <div class="security-card reveal delay-2">
-        <div class="security-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <div class="security-card-content">
-          <h3>Consistent Error Handling</h3>
-          <p>Standardized JSON error responses protect server internals and prevent information leakage across endpoints.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ================= DEVELOPER / REST API SECTION ================= -->
-<section class="page-section" id="developer-api">
-  <div class="container">
-    <div class="api-showcase-box reveal">
-      <div class="api-showcase-grid">
-        <!-- Left Column: Copy & Links -->
-        <div>
-          <div class="section-kicker">developer first</div>
-          <h2 class="section-title" style="margin-bottom: 16px;">Build With <span class="text-gradient">CyberPort Scanner</span></h2>
-          <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 24px;">
-            Integrate authorized scanning capabilities into your own applications through the CyberPort Scanner REST API.
-            Manage keys, trigger scans, retrieve status, and query port metadata programmatically.
-          </p>
-
-          <div style="display: flex; gap: 14px; flex-wrap: wrap;">
-            <a href="{{ url_for('main.api_docs') }}" class="btn btn-primary">
-              <i class="fa-solid fa-book-bookmark"></i> View API Documentation &rarr;
-            </a>
-            <a href="{{ url_for('main.developer') }}" class="btn btn-outline">
-              <i class="fa-solid fa-terminal"></i> Developer Portal &rarr;
-            </a>
-          </div>
-        </div>
-
-        <!-- Right Column: Code Showcase with Tabs -->
-        <div>
-          <div class="api-tabs-row">
-            <button type="button" class="api-tab-chip active" data-tab="tab-curl">cURL</button>
-            <button type="button" class="api-tab-chip" data-tab="tab-python">Python</button>
-            <button type="button" class="api-tab-chip" data-tab="tab-js">JavaScript</button>
-            <button type="button" class="api-tab-chip" data-tab="tab-json">JSON Response</button>
-          </div>
-
-          <div class="api-code-terminal">
-            <div class="api-code-topbar">
-              <div class="demo-window-controls">
-                <span class="terminal-dot red"></span>
-                <span class="terminal-dot yellow"></span>
-                <span class="terminal-dot green"></span>
-                <span class="demo-title-text">REST API v1</span>
-              </div>
-              <button type="button" class="api-copy-btn" data-target=".api-code-snippet.active code" aria-label="Copy code">
-                <i class="fa-regular fa-copy"></i> Copy
-              </button>
+                    <!-- Hero Visual (Scanner Mockup) -->
+                    <div class="reveal lg:pl-10 relative animate-float">
+                        <div class="absolute inset-0 bg-cyber-accent/20 blur-[100px] rounded-full"></div>
+                        
+                        <div class="glass-card rounded-xl overflow-hidden scanner-container shadow-2xl border border-gray-700/50 relative z-10">
+                            <div class="scan-line"></div>
+                            
+                            <!-- Mockup Header -->
+                            <div class="bg-gray-900/80 px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                </div>
+                                <div class="text-xs font-mono text-gray-400">Target: 192.168.1.10</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs font-mono text-emerald-400 flex items-center gap-1 font-semibold">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-ping"></span>
+                                        SCANNING
+                                    </span>
+                                    <i class="fa-solid fa-server text-gray-500 ml-2"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Mockup Body -->
+                            <div class="p-5 bg-[#0a0f1c]/90 font-mono text-sm">
+                                <div class="text-cyber-accent mb-4">$ init_scan --target 192.168.1.10 --fast</div>
+                                
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="text-gray-500 border-b border-gray-800">
+                                            <th class="pb-2 font-normal">PORT</th>
+                                            <th class="pb-2 font-normal">SERVICE</th>
+                                            <th class="pb-2 font-normal text-right">STATUS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-gray-300">
+                                        <tr class="border-b border-gray-800/50">
+                                            <td class="py-3">22/tcp</td>
+                                            <td class="py-3 text-gray-400">SSH</td>
+                                            <td class="py-3 text-right"><span class="text-emerald-400 font-semibold">OPEN</span></td>
+                                        </tr>
+                                        <tr class="border-b border-gray-800/50">
+                                            <td class="py-3">80/tcp</td>
+                                            <td class="py-3 text-gray-400">HTTP</td>
+                                            <td class="py-3 text-right"><span class="text-emerald-400 font-semibold">OPEN</span></td>
+                                        </tr>
+                                        <tr class="border-b border-gray-800/50">
+                                            <td class="py-3">443/tcp</td>
+                                            <td class="py-3 text-gray-400">HTTPS</td>
+                                            <td class="py-3 text-right"><span class="text-emerald-400 font-semibold">OPEN</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-3">3306/tcp</td>
+                                            <td class="py-3 text-gray-400">MySQL</td>
+                                            <td class="py-3 text-right"><span class="text-red-400 font-semibold">CLOSED</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <div class="mt-4 pt-3 border-t border-gray-800 text-xs text-gray-500 flex justify-between">
+                                    <span>Scan completed in 1.42s</span>
+                                    <span>4 ports analyzed</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <!-- Tab 1: cURL -->
-            <div id="tab-curl" class="api-code-snippet active">
-              <pre class="api-code-pre"><code>curl -X POST https://cyberport-scanner.onrender.com/api/v1/scans \
-  -H "Authorization: Bearer YOUR_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "target": "192.168.1.10",
-    "start_port": 1,
-    "end_port": 1024
-  }'</code></pre>
+        <!-- Feature Strip -->
+        <div class="border-y border-gray-800/50 bg-cyber-900/50 backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex flex-wrap justify-center gap-6 md:gap-12 items-center text-sm font-medium text-gray-400">
+                    <div class="flex items-center gap-2 hover:text-white transition-colors cursor-default">
+                        <i class="fa-solid fa-bolt text-cyber-accent"></i> Real-Time Scanning
+                    </div>
+                    <div class="flex items-center gap-2 hover:text-white transition-colors cursor-default">
+                        <i class="fa-solid fa-key text-cyber-accent"></i> API Key Authentication
+                    </div>
+                    <div class="flex items-center gap-2 hover:text-white transition-colors cursor-default">
+                        <i class="fa-solid fa-shield-halved text-cyber-accent"></i> Private Target Protection
+                    </div>
+                    <div class="flex items-center gap-2 hover:text-white transition-colors cursor-default">
+                        <i class="fa-solid fa-clock-rotate-left text-cyber-accent"></i> Scan History
+                    </div>
+                    <div class="flex items-center gap-2 hover:text-white transition-colors cursor-default">
+                        <i class="fa-solid fa-file-csv text-cyber-accent"></i> CSV Export
+                    </div>
+                    <div class="flex items-center gap-2 hover:text-white transition-colors cursor-default">
+                        <i class="fa-solid fa-network-wired text-cyber-accent"></i> REST API v1
+                    </div>
+                </div>
             </div>
-
-            <!-- Tab 2: Python -->
-            <div id="tab-python" class="api-code-snippet">
-              <pre class="api-code-pre"><code>import requests
-
-url = "https://cyberport-scanner.onrender.com/api/v1/scans"
-headers = {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json"
-}
-payload = {
-    "target": "192.168.1.10",
-    "start_port": 1,
-    "end_port": 1024
-}
-
-response = requests.post(url, headers=headers, json=payload)
-print(response.json())</code></pre>
-            </div>
-
-            <!-- Tab 3: JavaScript -->
-            <div id="tab-js" class="api-code-snippet">
-              <pre class="api-code-pre"><code>const res = await fetch("https://cyberport-scanner.onrender.com/api/v1/scans", {
-  method: "POST",
-  headers: {
-    "Authorization": "Bearer YOUR_API_KEY",
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    target: "192.168.1.10",
-    start_port: 1,
-    end_port: 1024
-  })
-});
-
-const data = await res.json();
-console.log(data);</code></pre>
-            </div>
-
-            <!-- Tab 4: JSON Response -->
-            <div id="tab-json" class="api-code-snippet">
-              <pre class="api-code-pre"><code>{
-  "success": true,
-  "data": {
-    "scan_id": 42,
-    "target": "192.168.1.10",
-    "status": "completed",
-    "open_ports": [
-      {"port": 22, "service": "SSH", "state": "open"},
-      {"port": 80, "service": "HTTP", "state": "open"},
-      {"port": 443, "service": "HTTPS", "state": "open"}
-    ],
-    "duration": 1.84,
-    "total_scanned": 1024
-  }
-}</code></pre>
-            </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ================= TERMINAL / CYBERSECURITY VISUAL ================= -->
-<section class="page-section tight">
-  <div class="container">
-    <div class="cli-box reveal">
-      <div class="cli-terminal">
-        <div class="cli-topbar">
-          <div class="demo-window-controls">
-            <span class="terminal-dot red"></span>
-            <span class="terminal-dot yellow"></span>
-            <span class="terminal-dot green"></span>
-            <span class="demo-title-text">cyberport-scanner — CLI output</span>
-          </div>
-          <button type="button" class="api-copy-btn" data-target="#cli-content" aria-label="Copy terminal text">
-            <i class="fa-regular fa-copy"></i> Copy
-          </button>
+        <!-- Features Section -->
+        <section class="py-24 relative z-10" id="features">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16 reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">Everything You Need for Network Reconnaissance</h2>
+                    <p class="text-gray-400">Powerful, authorized tools designed to provide visibility into network exposure, backed by a robust and secure architecture.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Feature 1 -->
+                    <div class="glass-card p-6 rounded-xl reveal">
+                        <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center text-cyber-accent text-xl mb-4 border border-cyber-accent/20">
+                            <i class="fa-solid fa-radar"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Real-Time Port Scanning</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Execute fast, accurate network scans against authorized targets. Monitor scan progress and discover open ports instantly.</p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="glass-card p-6 rounded-xl reveal" style="transition-delay: 100ms;">
+                        <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center text-cyber-accent text-xl mb-4 border border-cyber-accent/20">
+                            <i class="fa-solid fa-fingerprint"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Service Identification</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Automatically map discovered open ports to their respective services (HTTP, SSH, MySQL, etc.) for quick exposure analysis.</p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="glass-card p-6 rounded-xl reveal" style="transition-delay: 200ms;">
+                        <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center text-cyber-accent text-xl mb-4 border border-cyber-accent/20">
+                            <i class="fa-solid fa-database"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Scan History</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Securely store and review past reconnaissance data. Access a complete audit trail of targets, timestamps, and findings.</p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="glass-card p-6 rounded-xl reveal" style="transition-delay: 300ms;">
+                        <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center text-cyber-accent text-xl mb-4 border border-cyber-accent/20">
+                            <i class="fa-solid fa-plug"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Secure REST API</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Integrate scanning capabilities directly into your workflows or custom applications with our versioned REST API endpoints.</p>
+                    </div>
+
+                    <!-- Feature 5 -->
+                    <div class="glass-card p-6 rounded-xl reveal" style="transition-delay: 400ms;">
+                        <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center text-cyber-accent text-xl mb-4 border border-cyber-accent/20">
+                            <i class="fa-solid fa-key"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">Developer API Keys</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Generate and manage secure API keys from the Developer Portal. Keys are cryptographically hashed for maximum security.</p>
+                    </div>
+
+                    <!-- Feature 6 -->
+                    <div class="glass-card p-6 rounded-xl reveal" style="transition-delay: 500ms;">
+                        <div class="w-12 h-12 bg-cyber-accent/10 rounded-lg flex items-center justify-center text-cyber-accent text-xl mb-4 border border-cyber-accent/20">
+                            <i class="fa-solid fa-file-export"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white mb-2">CSV Export</h3>
+                        <p class="text-gray-400 text-sm leading-relaxed">Easily export your scan results into structured CSV formats for reporting, offline analysis, or ingestion into other security tools.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section class="py-20 relative bg-cyber-800/30 border-y border-gray-800/50" id="how-it-works">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-3xl font-bold mb-4">How It Works</h2>
+                    <p class="text-gray-400">Execute authorized network reconnaissance in three simple steps.</p>
+                </div>
+
+                <div class="relative max-w-5xl mx-auto">
+                    <div class="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-transparent via-cyber-accent/50 to-transparent"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 relative">
+                        <!-- Step 1 -->
+                        <div class="text-center reveal relative">
+                            <div class="w-24 h-24 mx-auto glass-card rounded-full flex items-center justify-center text-2xl font-bold text-cyber-accent mb-6 relative z-10 border-2 border-cyber-800 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                                01
+                            </div>
+                            <h3 class="text-xl font-semibold text-white mb-2">Enter Target</h3>
+                            <p class="text-gray-400 text-sm">Provide an authorized private or lab target IP address/hostname in the secure interface.</p>
+                        </div>
+                        
+                        <!-- Step 2 -->
+                        <div class="text-center reveal relative" style="transition-delay: 150ms;">
+                            <div class="w-24 h-24 mx-auto glass-card rounded-full flex items-center justify-center text-2xl font-bold text-cyber-accent mb-6 relative z-10 border-2 border-cyber-800 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                                02
+                            </div>
+                            <h3 class="text-xl font-semibold text-white mb-2">Scan</h3>
+                            <p class="text-gray-400 text-sm">CyberPort Scanner engine validates authorization and analyzes the requested target ports.</p>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="text-center reveal relative" style="transition-delay: 300ms;">
+                            <div class="w-24 h-24 mx-auto glass-card rounded-full flex items-center justify-center text-2xl font-bold text-cyber-accent mb-6 relative z-10 border-2 border-cyber-800 shadow-[0_0_20px_rgba(6,182,212,0.15)]">
+                                03
+                            </div>
+                            <h3 class="text-xl font-semibold text-white mb-2">Analyze Results</h3>
+                            <p class="text-gray-400 text-sm">Review discovered ports, associated service information, and export findings for reporting.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Security Section -->
+        <section class="py-24 relative z-10" id="security">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div class="reveal">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-6">Security Comes First</h2>
+                        <p class="text-gray-400 mb-8 leading-relaxed">
+                            CyberPort Scanner is designed strictly for authorized testing. We implement multiple layers of security and validation at the application level to ensure safe, controlled usage.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <!-- Security List Items -->
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">Private Target Restrictions</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">User-Level Access Control</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">RFC 1918 &amp; Loopback Protection</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">Concurrent scan protection</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">Rate Limiting &amp; Concurrency</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">Secure API key hashing</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">API Key Authentication</span>
+                            </div>
+                            <div class="flex items-start gap-3">
+                                <i class="fa-solid fa-circle-check text-cyber-accent mt-1"></i>
+                                <span class="text-sm text-gray-300">Consistent Error Handling</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="reveal relative flex justify-center">
+                        <div class="w-64 h-64 relative flex items-center justify-center">
+                            <div class="absolute inset-0 bg-cyber-accent/10 rounded-full blur-[60px]"></div>
+                            <div class="absolute inset-4 border border-cyber-accent/30 rounded-full animate-pulse-slow"></div>
+                            <div class="absolute inset-12 border border-cyber-accent/20 rounded-full animate-pulse-slow" style="animation-delay: -1.5s;"></div>
+                            <i class="fa-solid fa-shield-halved text-8xl text-cyber-accent drop-shadow-[0_0_25px_rgba(6,182,212,0.5)]"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REST API Section -->
+        <section class="py-20 relative bg-gradient-to-b from-transparent to-[#0a0f1c] border-t border-gray-800/50" id="developer-api">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    
+                    <div class="reveal order-2 lg:order-1">
+                        <!-- Terminal Visual -->
+                        <div class="rounded-xl overflow-hidden shadow-2xl border border-gray-700/50 bg-[#0d1117]">
+                            <div class="bg-gray-800 px-4 py-2 flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-xs text-gray-400 font-sans ml-2">cyberport-terminal</span>
+                            </div>
+                            <div class="p-5 font-mono text-sm h-64 overflow-y-auto" id="terminal-content">
+                                <!-- JS typing effect will populate this -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reveal order-1 lg:order-2 lg:pl-10">
+                        <h2 class="text-3xl font-bold mb-4">Build With CyberPort Scanner</h2>
+                        <p class="text-gray-400 mb-6">
+                            Integrate authorized scanning capabilities into your applications through the CyberPort Scanner REST API. Manage keys and automate network reconnaissance programmatically.
+                        </p>
+                        
+                        <!-- Code Block -->
+                        <div class="bg-[#0d1117] rounded-lg p-4 border border-gray-800 font-mono text-sm mb-8 text-gray-300 relative group">
+                            <button onclick="copyCode()" class="absolute top-2 right-2 text-gray-500 hover:text-white transition-colors" aria-label="Copy code" title="Copy to clipboard">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                            <span class="text-pink-400">curl</span> <span class="text-yellow-300">-X</span> POST https://cyberport-scanner.onrender.com/api/v1/scans \<br>
+                            &nbsp;&nbsp;<span class="text-yellow-300">-H</span> <span class="text-green-300">"Authorization: Bearer YOUR_API_KEY"</span> \<br>
+                            &nbsp;&nbsp;<span class="text-yellow-300">-H</span> <span class="text-green-300">"Content-Type: application/json"</span>
+                        </div>
+
+                        <div class="flex flex-wrap gap-4">
+                            <a href="{{ url_for('main.api_docs') }}" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-2.5 rounded-md text-sm font-semibold transition-colors border border-gray-700 hover:border-gray-500">
+                                View API Documentation &rarr;
+                            </a>
+                            <a href="{{ url_for('main.developer') }}" class="bg-cyber-accent/10 text-cyber-accent hover:bg-cyber-accent hover:text-white px-6 py-2.5 rounded-md text-sm font-semibold transition-colors border border-cyber-accent/30">
+                                Developer Portal &rarr;
+                            </a>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section class="py-24 relative z-10 text-center">
+            <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 reveal">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6 text-white">Ready to Explore Your Network?</h2>
+                <p class="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">
+                    Run authorized scans, analyze exposed services and integrate scanning capabilities through the CyberPort Scanner API.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-5">
+                    <a href="{{ url_for('main.dashboard') }}" class="bg-cyber-accent hover:bg-cyber-accentHover text-white px-10 py-4 rounded-md font-bold text-lg transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                        Start Scanning
+                    </a>
+                    <a href="{{ url_for('main.api_docs') }}" class="bg-transparent border border-gray-600 hover:border-cyber-accent text-white px-10 py-4 rounded-md font-bold text-lg transition-all hover:bg-cyber-accent/10">
+                        Explore API
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-gray-800 bg-[#050810] py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Logo" class="w-6 h-6">
+                <span class="font-bold text-gray-300">CyberPort Scanner</span>
+            </div>
+            <div class="text-sm text-gray-500">
+                &copy; <span id="year">2026</span> CyberPort Scanner. Authorized use only.
+            </div>
+            <div class="flex gap-4 text-sm text-gray-500">
+                <a href="{{ url_for('main.api_docs') }}" class="hover:text-cyber-accent transition-colors">API</a>
+                <a href="{{ url_for('main.developer') }}" class="hover:text-cyber-accent transition-colors">Developers</a>
+                <a href="https://github.com/vipulbariya-code/CyberPort-Scanner" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors" aria-label="GitHub">
+                    <i class="fa-brands fa-github text-lg"></i>
+                </a>
+            </div>
         </div>
-        <div class="cli-body" id="cli-content">
-          <div><span class="cli-prompt">$</span> <span class="cli-cmd">cyberport-scanner --target 192.168.1.10 --ports 20-450</span></div>
-          <div class="cli-info">[+] Target validated: 192.168.1.10</div>
-          <div class="cli-info">[+] Private network confirmed (RFC 1918 Scope)</div>
-          <div class="cli-info">[+] Scan initialized with 100 worker threads</div>
-          <div><span class="cli-open">[+] Port 22/tcp</span> &nbsp;&nbsp;<span class="text-green">OPEN</span> &nbsp;&nbsp;SSH (OpenSSH 8.9p1)</div>
-          <div><span class="cli-open">[+] Port 80/tcp</span> &nbsp;&nbsp;<span class="text-green">OPEN</span> &nbsp;&nbsp;HTTP (nginx/1.22.0)</div>
-          <div><span class="cli-open">[+] Port 443/tcp</span> &nbsp;<span class="text-green">OPEN</span> &nbsp;&nbsp;HTTPS (TLSv1.3)</div>
-          <div class="cli-info">[+] Service identification complete</div>
-          <div class="cli-done">[&#10003;] Scan completed in 1.84s &mdash; 3 open / 428 closed</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+    </footer>
 
-<!-- ================= FREQUENTLY ASKED QUESTIONS ================= -->
-<section class="page-section" id="faq">
-  <div class="container">
-    <div class="section-head center reveal">
-      <div class="section-kicker">questions</div>
-      <h2 class="section-title">Frequently <span class="text-gradient">Asked</span></h2>
-    </div>
-    <div class="faq-list">
-      <div class="glass-card faq-item reveal">
-        <button class="faq-question">Is it legal to use CyberPort Scanner? <i class="fa-solid fa-plus"></i></button>
-        <div class="faq-answer"><div class="faq-answer-inner">Scanning is legal when performed against systems you own or have explicit written authorization to test — for example your own home lab, a personal VPS, or a client environment covered by a signed testing agreement. Scanning systems without permission may violate computer-crime laws such as the U.S. Computer Fraud and Abuse Act.</div></div>
-      </div>
-      <div class="glass-card faq-item reveal delay-1">
-        <button class="faq-question">What scanning technique does it use? <i class="fa-solid fa-plus"></i></button>
-        <div class="faq-answer"><div class="faq-answer-inner">A standard TCP connect scan: the server attempts a full three-way handshake on each port using Python's socket module. This is the same fundamental technique taught in introductory network security courses.</div></div>
-      </div>
-      <div class="glass-card faq-item reveal delay-2">
-        <button class="faq-question">How many ports can I scan at once? <i class="fa-solid fa-plus"></i></button>
-        <div class="faq-answer"><div class="faq-answer-inner">Up to 1024 ports per scan by default, which keeps scans fast and prevents abuse of shared hosting resources. Run multiple scans back-to-back to cover a wider range.</div></div>
-      </div>
-      <div class="glass-card faq-item reveal delay-3">
-        <button class="faq-question">Can I export my scan results? <i class="fa-solid fa-plus"></i></button>
-        <div class="faq-answer"><div class="faq-answer-inner">Yes — every completed scan can be exported as a CSV report from the Dashboard or Scan History page, or copied directly to your clipboard.</div></div>
-      </div>
-    </div>
-  </div>
-</section>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
 
-<!-- ================= FINAL CALL TO ACTION ================= -->
-<section class="page-section">
-  <div class="container">
-    <div class="final-cta-card reveal">
-      <h2 class="final-cta-title">Ready to Explore Your Network?</h2>
-      <p class="final-cta-sub">
-        Run authorized scans, analyze exposed services and integrate scanning capabilities through the CyberPort Scanner API.
-      </p>
-      <div class="hero-cta-group" style="justify-content: center; margin-bottom: 0;">
-        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary btn-hero">
-          <i class="fa-solid fa-bolt"></i> Start Scanning
-        </a>
-        <a href="{{ url_for('main.api_docs') }}" class="btn btn-outline btn-hero">
-          <i class="fa-solid fa-code"></i> Explore API
-        </a>
-      </div>
-    </div>
-  </div>
-</section>
+        const btn = document.getElementById('mobile-menu-btn');
+        const menu = document.getElementById('mobile-menu');
 
-{% endblock %}
+        if (btn && menu) {
+            btn.addEventListener('click', () => {
+                menu.classList.toggle('hidden');
+            });
+        }
 
-{% block extra_scripts %}
-<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
-{% endblock %}
+        function copyCode() {
+            const code = `curl -X POST https://cyberport-scanner.onrender.com/api/v1/scans \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json"`;
+            
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = code;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("copy");
+                textArea.remove();
+                
+                const btn = event.currentTarget;
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    icon.className = 'fa-solid fa-check text-green-400';
+                    setTimeout(() => {
+                        icon.className = 'fa-regular fa-copy';
+                    }, 2000);
+                }
+            } catch (err) {
+                console.error('Failed to copy text: ', err);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const reveals = document.querySelectorAll('.reveal');
+            
+            if (prefersReducedMotion) {
+                reveals.forEach(el => el.classList.add('active'));
+                return;
+            }
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            reveals.forEach(el => observer.observe(el));
+            
+            const terminalObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        startTerminalTyping();
+                        terminalObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            const terminalContent = document.getElementById('terminal-content');
+            if (terminalContent) terminalObserver.observe(terminalContent);
+        });
+
+        const terminalLines = [
+            { text: "$ cyberport-scanner --target 192.168.1.10", color: "text-cyber-accent" },
+            { text: "[+] Target validated: 192.168.1.10", color: "text-gray-300" },
+            { text: "[+] Private network confirmed", color: "text-gray-300" },
+            { text: "[+] Scan initialized...", color: "text-yellow-400" },
+            { text: "[+] Port 22 OPEN (SSH)", color: "text-emerald-400" },
+            { text: "[+] Port 80 OPEN (HTTP)", color: "text-emerald-400" },
+            { text: "[+] Port 443 OPEN (HTTPS)", color: "text-emerald-400" },
+            { text: "[+] Service identification complete", color: "text-gray-300" },
+            { text: "[✓] Scan completed successfully", color: "text-emerald-400 font-bold" }
+        ];
+
+        let typingStarted = false;
+
+        function startTerminalTyping() {
+            if (typingStarted) return;
+            typingStarted = true;
+            
+            const container = document.getElementById('terminal-content');
+            if (!container) return;
+
+            if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                let html = '';
+                terminalLines.forEach(line => {
+                    html += `<div class="${line.color} mb-1">${line.text}</div>`;
+                });
+                container.innerHTML = html;
+                return;
+            }
+
+            container.innerHTML = '';
+            let lineIndex = 0;
+            
+            function typeLine() {
+                if (lineIndex >= terminalLines.length) {
+                    const cursorLine = document.createElement('div');
+                    cursorLine.className = 'text-cyber-accent mt-2 typing-cursor';
+                    cursorLine.innerHTML = '$ ';
+                    container.appendChild(cursorLine);
+                    return;
+                }
+                
+                const lineData = terminalLines[lineIndex];
+                const lineElem = document.createElement('div');
+                lineElem.className = `${lineData.color} mb-1 typing-cursor`;
+                container.appendChild(lineElem);
+                
+                let charIndex = 0;
+                
+                function typeChar() {
+                    if (charIndex < lineData.text.length) {
+                        lineElem.textContent = lineData.text.substring(0, charIndex + 1);
+                        charIndex++;
+                        setTimeout(typeChar, Math.random() * 25 + 10);
+                    } else {
+                        lineElem.classList.remove('typing-cursor');
+                        lineIndex++;
+                        setTimeout(typeLine, 350);
+                    }
+                }
+                
+                typeChar();
+            }
+            
+            typeLine();
+        }
+    </script>
+</body>
+</html>

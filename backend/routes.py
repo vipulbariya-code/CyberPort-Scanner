@@ -86,6 +86,7 @@ def home():
     return render_template("index.html")
 
 
+@main_bp.route("/scanner")
 @main_bp.route("/dashboard")
 @page_login_required
 def dashboard():

@@ -18,14 +18,14 @@ class TestHomepageRedesign:
     def test_hero_badges_and_status(self, client):
         resp = client.get("/")
         html = resp.get_data(as_text=True)
-        assert "Authorized Security Tool" in html
-        assert "Private Targets Only" in html
+        assert ("Authorized Security Tool" in html or "AUTHORIZED SECURITY TOOL" in html)
+        assert ("Private Targets Only" in html or "PRIVATE TARGETS ONLY" in html)
         assert "Scanner Engine Online" in html
 
     def test_hero_ctas(self, client):
         resp = client.get("/")
         html = resp.get_data(as_text=True)
-        assert 'href="/dashboard"' in html
+        assert ('href="/dashboard"' in html or 'href="/scanner"' in html)
         assert "Start Scanning" in html
         assert 'href="/api/docs"' in html
         assert "Explore API" in html
