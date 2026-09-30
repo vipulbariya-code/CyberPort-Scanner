@@ -19,8 +19,12 @@ class Config:
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)
 
     # --- Database ---
-    # Set DATABASE_PATH to a mounted persistent volume when deploying.
-    DATABASE_PATH = os.environ.get(
+    # Production uses DATABASE_URL (PostgreSQL). Local / test fallback to DATABASE_PATH (SQLite).
+    _raw_db_url = os.environ.get("DATABASE_URL")
+    if _raw_db_url and _raw_db_url.startswith("postgres://"):
+        _raw_db_url = _raw_db_url.replace("postgres://", "postgresql://", 1)
+    DATABASE_URL = _raw_db_url
+    DATABASE_PATH = DATABASE_URL or os.environ.get(
         "DATABASE_PATH", os.path.join(BASE_DIR, "database", "cyberport.db")
     )
 

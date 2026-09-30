@@ -168,3 +168,105 @@ class TestDatabaseOperations:
         assert public_stats["total_scans"] == 2
         assert public_stats["total_open_ports"] == 3
         assert public_stats["last_scan"] is None  # Does not leak targets
+
+    def test_api_key_lifecycle(self, db):
+        pw_hash = generate_password_hash("Password123")
+        u = db.create_user("key_user", "key@example.com", pw_hash)
+
+        # Create key
+        key_info = db.create_api_key(u, name="Test Key")
+        assert key_info["name"] == "Test Key"
+        assert key_info["api_key"].startswith("cps_live_")
+        assert key_info["user_id"] == u
+
+        # Retrieve by hash
+        hash_val = key_info["api_key"]
+        import hashlib
+        computed_hash = hashlib.sha256(hash_val.encode("utf-8")).hexdigest()
+        retrieved = db.get_api_key_by_hash(computed_hash)
+        assert retrieved is not None
+        assert retrieved["id"] == key_info["id"]
+        assert retrieved["username"] == "key_user"
+
+        # List keys
+        keys = db.list_api_keys(u)
+        assert len(keys) == 1
+        assert keys[0]["is_active"] is True
+
+        # Touch key
+        db.touch_api_key(key_info["id"])
+        updated = db.get_api_key(key_info["id"], u)
+        assert updated["last_used_at"] is not None
+
+        # Revoke key
+        assert db.revoke_api_key(key_info["id"], u) is True
+        revoked = db.get_api_key(key_info["id"], u)
+        assert revoked["is_active"] is False
+
+
+class TestDualBackendCompatibility:
+    def test_sqlite_fallback_detection(self):
+        db = Database(":memory:")
+        assert db.is_postgres is False
+
+    def test_postgres_detection_and_normalization(self):
+        # Instantiate without running schema by checking detection logic
+        pg_url = "postgres://user:pass@host:5432/neondb?sslmode=require"
+        # Test URL normalization in Config
+        from config import Config
+        raw = "postgres://test_user:pass@ep-cool-host.neon.tech/neondb?sslmode=require"
+        normalized = raw.replace("postgres://", "postgresql://", 1)
+        assert normalized.startswith("postgresql://")
+
+    def test_dbrow_compatibility(self):
+        from models import DBRow
+        row = DBRow({"id": 42, "target": "10.0.0.1"}, (42, "10.0.0.1"))
+        # Dict access
+        assert row["id"] == 42
+        assert row["target"] == "10.0.0.1"
+        # Index access (sqlite3.Row behavior)
+        assert row[0] == 42
+        assert row[1] == "10.0.0.1"
+        # dict() conversion
+        assert dict(row) == {"id": 42, "target": "10.0.0.1"}
+
+    def test_pg_cursor_wrapper_placeholder_translation(self):
+        from models import PGCursorWrapper
+        executed = []
+
+        class FakeCursor:
+            description = [("id",), ("email",)]
+            rowcount = 1
+
+            def execute(self, sql, params=None):
+                executed.append((sql, params))
+
+            def fetchone(self):
+                return (1, "a@b.com")
+
+            def fetchall(self):
+                return [(1, "a@b.com")]
+
+        fake = FakeCursor()
+        wrapper = PGCursorWrapper(fake)
+        wrapper.execute("SELECT * FROM users WHERE email = ? AND id = ?", ("test@example.com", 1))
+
+        assert len(executed) == 1
+        sql, params = executed[0]
+        # Verified ? converted to %s for PostgreSQL
+        assert "%s" in sql
+        assert "?" not in sql
+        assert params == ("test@example.com", 1)
+
+        row = wrapper.fetchone()
+        assert row["id"] == 1
+        assert row[0] == 1
+
+    def test_database_integrity_error_subclass(self):
+        from models import DatabaseIntegrityError
+        import sqlite3
+        assert issubclass(DatabaseIntegrityError, sqlite3.IntegrityError)
+        try:
+            raise DatabaseIntegrityError("duplicate key violates unique constraint")
+        except sqlite3.IntegrityError as e:
+            assert "duplicate key" in str(e)

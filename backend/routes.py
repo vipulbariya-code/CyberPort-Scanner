@@ -25,6 +25,8 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
+from models import DatabaseIntegrityError
+
 from scanner import (
     PortScanner, validate_target, validate_port_range, resolve_target,
     validate_resolved_target, ValidationError
@@ -149,7 +151,7 @@ def signup():
                 user_id = current_app.db.create_user(
                     username, email, generate_password_hash(password)
                 )
-            except sqlite3.IntegrityError:
+            except (sqlite3.IntegrityError, DatabaseIntegrityError):
                 flash("That username or email is already registered.", "error")
             else:
                 session.clear()
