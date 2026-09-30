@@ -30,7 +30,17 @@
 
   <!-- Fonts / Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&family=Orbitron:wght@500;700;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+
+  <!-- No-JS fallback to prevent stuck loading screen -->
+  <noscript>
+    <style>
+      #loading-screen { display: none !important; }
+    </style>
+  </noscript>
 
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -41,7 +51,7 @@
 <body>
 
   <!-- Loading screen -->
-  <div id="loading-screen">
+  <div id="loading-screen" aria-live="polite">
     <div class="loader-brand">
       <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="" class="loader-symbol" width="52" height="52">
       <div class="loader-logo">CYBERPORT_SCANNER</div>
@@ -49,6 +59,22 @@
     <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
     <div class="loader-status">initializing secure session…</div>
   </div>
+  <script>
+    /* Safe inline fallback: ensures loading screen dismisses even if external resources stall */
+    (function () {
+      var dismissed = false;
+      function hideLoader() {
+        if (dismissed) return;
+        dismissed = true;
+        var el = document.getElementById('loading-screen');
+        if (el && !el.classList.contains('hidden')) {
+          el.classList.add('hidden');
+          setTimeout(function () { if (el) el.style.display = 'none'; }, 500);
+        }
+      }
+      setTimeout(hideLoader, 1800);
+    })();
+  </script>
 
   <!-- Ambient background layers (matching homepage) -->
   <canvas id="matrix-canvas" style="display:none;"></canvas>
@@ -168,7 +194,7 @@
   <div id="toast-container" aria-live="polite"></div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
   <script src="{{ url_for('static', filename='js/matrix.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   {% block extra_scripts %}{% endblock %}

@@ -81,6 +81,11 @@ def _prune_jobs():
 # =====================================================================
 # Page routes
 # =====================================================================
+@main_bp.route("/health")
+def health():
+    return jsonify({"status": "ok"}), 200
+
+
 @main_bp.route("/")
 def home():
     return render_template("index.html")

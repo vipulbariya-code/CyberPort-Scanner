@@ -6,13 +6,60 @@
  */
 
 // ---------------------------------------------------------------------
-// Loading screen
+// Loading screen (graceful, non-blocking with safe fallback)
 // ---------------------------------------------------------------------
-window.addEventListener('load', () => {
+(function initLoadingScreen() {
   const loader = document.getElementById('loading-screen');
   if (!loader) return;
-  setTimeout(() => loader.classList.add('hidden'), 900);
-});
+
+  let isDismissed = false;
+  const prefersReducedMotion =
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function dismissLoader() {
+    if (isDismissed) return;
+    isDismissed = true;
+
+    if (prefersReducedMotion) {
+      loader.classList.add('hidden');
+      loader.style.display = 'none';
+      return;
+    }
+
+    loader.classList.add('hidden');
+    // Remove from render tree after transition finishes
+    setTimeout(() => {
+      if (loader) {
+        loader.style.display = 'none';
+      }
+    }, 450);
+  }
+
+  // Safe fallback timeout: dismiss after 1.5s max regardless of external resources
+  const MAX_LOADER_TIMEOUT = 1500;
+  const fallbackTimer = setTimeout(dismissLoader, MAX_LOADER_TIMEOUT);
+
+  function scheduleDismiss() {
+    clearTimeout(fallbackTimer);
+    setTimeout(dismissLoader, prefersReducedMotion ? 0 : 180);
+  }
+
+  if (document.readyState === 'complete') {
+    clearTimeout(fallbackTimer);
+    dismissLoader();
+  } else if (document.readyState === 'interactive') {
+    scheduleDismiss();
+  } else {
+    document.addEventListener('DOMContentLoaded', scheduleDismiss, { once: true });
+    window.addEventListener('load', () => {
+      clearTimeout(fallbackTimer);
+      dismissLoader();
+    }, { once: true });
+  }
+
+  window.dismissCyberPortLoader = dismissLoader;
+})();
 
 // ---------------------------------------------------------------------
 // Mobile nav toggle

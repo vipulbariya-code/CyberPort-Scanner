@@ -7,15 +7,52 @@ from werkzeug.security import generate_password_hash
 
 class TestPageRoutes:
     def test_public_pages(self, client):
-        for route in ("/", "/about", "/contact", "/login", "/signup"):
+        for route in ("/", "/about", "/contact", "/login", "/signup", "/api/docs"):
             res = client.get(route)
             assert res.status_code == 200
 
+    def test_health_endpoint(self, client):
+        res = client.get("/health")
+        assert res.status_code == 200
+        assert res.headers["Content-Type"].startswith("application/json")
+        data = res.get_json()
+        assert data == {"status": "ok"}
+
     def test_protected_pages_redirect_unauthenticated(self, client):
-        for route in ("/dashboard", "/history"):
+        for route in ("/dashboard", "/scanner", "/history", "/developer"):
             res = client.get(route)
             assert res.status_code == 302
             assert "/login" in res.headers["Location"]
+
+    def test_authenticated_pages(self, client, app):
+        with app.app_context():
+            uid = app.db.create_user("auth_page_user", "auth_pages@example.com", generate_password_hash("Secret12345"))
+        with client.session_transaction() as sess:
+            sess["user_id"] = uid
+            sess["username"] = "auth_page_user"
+
+        for route in ("/dashboard", "/scanner", "/history", "/developer"):
+            res = client.get(route)
+            assert res.status_code == 200
+
+    def test_loading_screen_and_performance_elements(self, client):
+        res = client.get("/login")
+        assert res.status_code == 200
+        html = res.get_data(as_text=True)
+        # Loading screen branding & structure
+        assert 'id="loading-screen"' in html
+        assert "CYBERPORT_SCANNER" in html
+        assert "initializing secure session" in html
+        # No-JS fallback
+        assert "<noscript>" in html
+        assert "#loading-screen { display: none !important; }" in html
+        # Safe inline fallback timer
+        assert "hideLoader" in html or "setTimeout" in html
+        # Resource hints
+        assert 'rel="preconnect" href="https://fonts.gstatic.com"' in html
+        assert 'rel="preconnect" href="https://cdnjs.cloudflare.com"' in html
+        # Non-blocking Chart.js
+        assert 'chart.umd.min.js" defer' in html
 
     def test_404_error_page(self, client):
         res = client.get("/nonexistent-route-404")
