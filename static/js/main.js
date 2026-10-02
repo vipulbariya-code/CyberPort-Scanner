@@ -69,11 +69,16 @@
   const links = document.getElementById('nav-links');
   if (!toggle || !links) return;
   toggle.addEventListener('click', () => {
-    links.classList.toggle('open');
-    toggle.classList.toggle('open');
+    const isOpen = links.classList.toggle('open');
+    toggle.classList.toggle('open', isOpen);
+    toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
   links.querySelectorAll('a').forEach((a) =>
-    a.addEventListener('click', () => links.classList.remove('open'))
+    a.addEventListener('click', () => {
+      links.classList.remove('open');
+      toggle.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    })
   );
 })();
 
@@ -134,57 +139,6 @@ window.Toast = Toast;
   items.forEach((item) => observer.observe(item));
 })();
 
-// ---------------------------------------------------------------------
-// FAQ accordion
-// ---------------------------------------------------------------------
-(function initFaq() {
-  document.querySelectorAll('.faq-question').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const item = btn.closest('.faq-item');
-      const wasOpen = item.classList.contains('open');
-      document.querySelectorAll('.faq-item.open').forEach((i) => i.classList.remove('open'));
-      if (!wasOpen) item.classList.add('open');
-    });
-  });
-})();
-
-// ---------------------------------------------------------------------
-// Hero typing effect
-// ---------------------------------------------------------------------
-(function initTyping() {
-  const el = document.getElementById('typed-text');
-  if (!el) return;
-
-  const phrases = [
-    'Scanning for authorized security research...',
-    'Educational network diagnostics, made visual.',
-    'Know your own attack surface, ethically.',
-    'Built for students, learners & pentesting labs.',
-  ];
-  let phraseIndex = 0, charIndex = 0, deleting = false;
-
-  function tick() {
-    const current = phrases[phraseIndex];
-    if (!deleting) {
-      charIndex++;
-      el.textContent = current.slice(0, charIndex);
-      if (charIndex === current.length) {
-        deleting = true;
-        setTimeout(tick, 1600);
-        return;
-      }
-    } else {
-      charIndex--;
-      el.textContent = current.slice(0, charIndex);
-      if (charIndex === 0) {
-        deleting = false;
-        phraseIndex = (phraseIndex + 1) % phrases.length;
-      }
-    }
-    setTimeout(tick, deleting ? 28 : 42);
-  }
-  tick();
-})();
 
 // ---------------------------------------------------------------------
 // Active nav link highlighting

@@ -16,7 +16,7 @@
   <meta name="description" content="{% block description %}CyberPort Scanner is a professional-grade network port scanner built for educational and authorized security testing. Learn TCP/IP scanning fundamentals safely.{% endblock %}">
   <meta name="robots" content="index, follow">
   <meta name="author" content="Vipul Bariya">
-  <link rel="canonical" href="https://cyberport-scanner.onrender.com/">
+  <link rel="canonical" href="{% block canonical %}{{ request.base_url }}{% endblock %}">
   <meta property="og:title" content="CyberPort Scanner">
   <meta property="og:description" content="Professional network port scanner for educational & authorized security testing.">
   <meta property="og:url" content="https://cyberport-scanner.onrender.com/">
@@ -126,7 +126,7 @@
         {% endif %}
       </nav>
 
-      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu">
+      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-links">
         <span></span><span></span><span></span>
       </button>
     </div>

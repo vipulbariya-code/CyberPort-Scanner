@@ -464,6 +464,8 @@ gunicorn --chdir backend app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --
   - `SECRET_KEY`: *(Generate secure random string)*
   - `PYTHON_VERSION`: `3.11.9`
   - `PRIVATE_TARGETS_ONLY`: `true`
+  - `DATABASE_URL`: *(Recommended for production persistence)* In the Render Dashboard, create a PostgreSQL database and attach or copy its database URL into `DATABASE_URL`. Without `DATABASE_URL`, CyberPort Scanner defaults to a local SQLite database (`database/cyberport.db`), which will be reset whenever Render spins down or redeploys ephemeral containers.
+
 
 ---
 

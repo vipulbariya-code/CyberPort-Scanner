@@ -7,6 +7,11 @@
   const canvas = document.getElementById('matrix-canvas');
   if (!canvas) return;
 
+  // Do not run animation or timers if canvas is hidden
+  const isHidden = canvas.style.display === 'none' ||
+    (window.getComputedStyle && window.getComputedStyle(canvas).display === 'none');
+  if (isHidden) return;
+
   const ctx = canvas.getContext('2d');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

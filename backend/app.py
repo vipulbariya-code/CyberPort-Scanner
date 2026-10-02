@@ -206,7 +206,7 @@ def create_app(env=None):
             return _v1_error("INTERNAL_SERVER_ERROR", "An internal server error occurred.", 500)
         if request.path.startswith("/api/"):
             return jsonify({"success": False, "error": "An internal server error occurred."}), 500
-        return render_template("404.html"), 500
+        return render_template("500.html"), 500
 
     # --- Security headers on every response ---
     @app.after_request
@@ -220,11 +220,11 @@ def create_app(env=None):
         # Content Security Policy safe for all templates and external CDN assets
         csp = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://www.googletagmanager.com; "
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
             "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; "
-            "img-src 'self' data: https:; "
-            "connect-src 'self'; "
+            "img-src 'self' data: https: https://www.google-analytics.com https://*.google-analytics.com; "
+            "connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://analytics.google.com; "
             "frame-ancestors 'none';"
         )
         response.headers["Content-Security-Policy"] = csp

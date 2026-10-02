@@ -88,6 +88,43 @@ def health():
     return jsonify({"status": "ok"}), 200
 
 
+@main_bp.route("/robots.txt")
+def robots_txt():
+    content = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Allow: /about\n"
+        "Allow: /contact\n"
+        "Allow: /login\n"
+        "Allow: /signup\n"
+        "Allow: /api/docs\n"
+        "Disallow: /dashboard\n"
+        "Disallow: /scanner\n"
+        "Disallow: /history\n"
+        "Disallow: /developer\n"
+        "Disallow: /api/\n"
+        "\n"
+        "Sitemap: https://cyberport-scanner.onrender.com/sitemap.xml\n"
+    )
+    return current_app.response_class(content, mimetype="text/plain")
+
+
+@main_bp.route("/sitemap.xml")
+def sitemap_xml():
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        '  <url><loc>https://cyberport-scanner.onrender.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>\n'
+        '  <url><loc>https://cyberport-scanner.onrender.com/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n'
+        '  <url><loc>https://cyberport-scanner.onrender.com/contact</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>\n'
+        '  <url><loc>https://cyberport-scanner.onrender.com/login</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
+        '  <url><loc>https://cyberport-scanner.onrender.com/signup</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
+        '  <url><loc>https://cyberport-scanner.onrender.com/api/docs</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n'
+        '</urlset>'
+    )
+    return current_app.response_class(xml, mimetype="application/xml")
+
+
 @main_bp.route("/")
 def home():
     return render_template("index.html")
@@ -155,6 +192,7 @@ def signup():
                 flash("That username or email is already registered.", "error")
             else:
                 session.clear()
+                session.permanent = True
                 session["user_id"] = user_id
                 session["username"] = username
                 flash("Account created. Welcome!", "success")
@@ -181,6 +219,7 @@ def login():
             flash("Invalid email or password.", "error")
         else:
             session.clear()
+            session.permanent = True
             session["user_id"] = user["id"]
             session["username"] = user["username"]
             next_url = request.args.get("next", "")

@@ -108,12 +108,12 @@
       <div class="results-toolbar">
         <div class="results-search">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="form-input" id="results-search-input" placeholder="Search by port or service...">
+          <input type="text" class="form-input" id="results-search-input" placeholder="Search by port or service..." aria-label="Search discovered open ports">
         </div>
         <div class="results-actions">
           <span id="results-count" style="align-self:center; color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;"></span>
-          <button class="btn btn-outline btn-sm" id="btn-copy-results"><i class="fa-solid fa-copy"></i> Copy</button>
-          <button class="btn btn-outline btn-sm" id="btn-export-csv"><i class="fa-solid fa-download"></i> Export CSV</button>
+          <button class="btn btn-outline btn-sm" id="btn-copy-results" aria-label="Copy scan results to clipboard"><i class="fa-solid fa-copy"></i> Copy</button>
+          <button class="btn btn-outline btn-sm" id="btn-export-csv" aria-label="Export scan results to CSV"><i class="fa-solid fa-download"></i> Export CSV</button>
         </div>
       </div>
 
