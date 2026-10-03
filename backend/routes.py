@@ -95,14 +95,16 @@ def robots_txt():
         "Allow: /\n"
         "Allow: /about\n"
         "Allow: /contact\n"
-        "Allow: /login\n"
-        "Allow: /signup\n"
         "Allow: /api/docs\n"
+        "Disallow: /developer\n"
         "Disallow: /dashboard\n"
         "Disallow: /scanner\n"
         "Disallow: /history\n"
-        "Disallow: /developer\n"
-        "Disallow: /api/\n"
+        "Disallow: /logout\n"
+        "Disallow: /api/v1/\n"
+        "Disallow: /api/scan/\n"
+        "Disallow: /api/history/\n"
+        "Disallow: /api/keys\n"
         "\n"
         "Sitemap: https://cyberport-scanner.onrender.com/sitemap.xml\n"
     )
@@ -115,11 +117,9 @@ def sitemap_xml():
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         '  <url><loc>https://cyberport-scanner.onrender.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>\n'
+        '  <url><loc>https://cyberport-scanner.onrender.com/api/docs</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n'
         '  <url><loc>https://cyberport-scanner.onrender.com/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>\n'
         '  <url><loc>https://cyberport-scanner.onrender.com/contact</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>\n'
-        '  <url><loc>https://cyberport-scanner.onrender.com/login</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
-        '  <url><loc>https://cyberport-scanner.onrender.com/signup</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n'
-        '  <url><loc>https://cyberport-scanner.onrender.com/api/docs</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n'
         '</urlset>'
     )
     return current_app.response_class(xml, mimetype="application/xml")

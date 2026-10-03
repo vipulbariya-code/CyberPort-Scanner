@@ -289,7 +289,8 @@ def create_scan():
         return api_error("TARGET_NOT_ALLOWED", str(e), 400)
 
     # Concurrency check
-    active_count = db.count_active_scans(user_id)
+    stale_timeout = cfg.get("SCAN_STALE_TIMEOUT_SECONDS", 300)
+    active_count = db.count_active_scans(user_id, timeout_seconds=stale_timeout)
     max_concurrent = cfg.get("MAX_CONCURRENT_SCANS_PER_USER", 2)
     if active_count >= max_concurrent:
         return api_error(
@@ -344,7 +345,8 @@ def get_scan(scan_id):
 
     db = current_app.db
     user_id = g.api_user["id"]
-    scan = db.get_scan(s_id, user_id)
+    stale_timeout = current_app.config.get("SCAN_STALE_TIMEOUT_SECONDS", 300)
+    scan = db.get_scan(s_id, user_id, timeout_seconds=stale_timeout)
     if not scan:
         return api_error("SCAN_NOT_FOUND", "Scan not found.", 404)
 
@@ -384,8 +386,9 @@ def list_scans():
     per_page = min(max(1, per_page), 100)
     user_id = g.api_user["id"]
     db = current_app.db
+    stale_timeout = current_app.config.get("SCAN_STALE_TIMEOUT_SECONDS", 300)
 
-    result = db.list_scans(user_id, page=page, page_size=per_page)
+    result = db.list_scans(user_id, page=page, page_size=per_page, timeout_seconds=stale_timeout)
     scans_list = []
     for s in result["items"]:
         scans_list.append({

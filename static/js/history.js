@@ -20,7 +20,18 @@
     const q = encodeURIComponent(searchInput.value.trim());
     try {
       const res = await apiRequest(`/api/history?page=${page}&search=${q}`);
-      renderList(res.data);
+      const data = res.data;
+      if (!data.items.length && currentPage > 1) {
+        if (data.total === 0) {
+          currentPage = 1;
+        } else {
+          const targetPage = data.total_pages
+            ? Math.min(data.total_pages, currentPage - 1)
+            : (currentPage - 1);
+          return loadHistory(Math.max(1, targetPage));
+        }
+      }
+      renderList(data);
     } catch (err) {
       Toast.show(err.message, 'error');
     }

@@ -118,3 +118,23 @@ class TestHomepageRedesign:
         assert "History" in html
         assert "Developer API" in html
         assert "API Docs" in html
+
+    def test_copy_code_explicit_event_handling(self, client):
+        resp = client.get("/")
+        html = resp.get_data(as_text=True)
+
+        # Confirm the copy button passes the event explicitly
+        assert 'onclick="copyCode(event)"' in html
+        assert 'onclick="copyCode()"' not in html
+
+        # Confirm copyCode signature accepts event explicitly
+        assert "function copyCode(event)" in html
+        assert "function copyCode()" not in html
+
+        # Confirm button accessibility attributes and icons are preserved
+        assert 'aria-label="Copy code"' in html
+        assert 'title="Copy to clipboard"' in html
+        assert "fa-copy" in html
+
+        # Confirm no undeclared global event usage
+        assert "const btn = event.currentTarget;" not in html

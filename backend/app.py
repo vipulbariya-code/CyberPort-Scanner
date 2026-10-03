@@ -14,6 +14,7 @@ import os
 import secrets
 import hmac
 import hashlib
+import urllib.parse
 from flask import Flask, request, session, jsonify, render_template, redirect, url_for, flash
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -23,6 +24,93 @@ from config import config_map, ProductionConfig
 from models import Database
 from routes import main_bp, api_bp
 from api_v1 import api_v1_bp
+
+
+def get_safe_redirect_target(target=None, default="main.home"):
+    """
+    Validate a redirect target (e.g. request.referrer) to prevent external open redirects (BUG-02).
+
+    Only allows:
+    - Safe relative paths starting with '/' (e.g. '/dashboard', '/history?tab=recent').
+    - Same-origin absolute URLs matching request.host (e.g. 'http://localhost:5000/developer').
+
+    Rejects:
+    - External domains / schemes (e.g. 'https://evil.example', 'http://evil.example').
+    - Protocol-relative URLs (e.g. '//evil.example').
+    - Backslash evasion (e.g. '/\\evil.example', '\\\\evil.example').
+    - Embedded credentials (e.g. 'http://localhost@evil.example').
+    - Non-HTTP(S) schemes (e.g. 'javascript:alert(1)', 'data:text/html,...').
+    - Malformed targets or targets with control characters (CRLF injection prevention).
+
+    Returns:
+    - A safe local relative path or url_for(default) fallback.
+    """
+    try:
+        fallback = url_for(default)
+    except Exception:
+        fallback = "/"
+
+    if not target or not isinstance(target, str):
+        return fallback
+
+    target = target.strip()
+    if not target:
+        return fallback
+
+    # Reject control characters (CRLF injection prevention) and backslashes
+    if any(c in target for c in ("\r", "\n", "\x00", "\\")):
+        return fallback
+
+    # Check for URL-encoded control characters or backslashes
+    unquoted = urllib.parse.unquote(target)
+    if any(c in unquoted for c in ("\r", "\n", "\x00", "\\")):
+        return fallback
+
+    if unquoted.startswith("//") or unquoted.startswith("/\\"):
+        return fallback
+
+    try:
+        parsed = urllib.parse.urlsplit(target)
+    except Exception:
+        return fallback
+
+    # If scheme is present, must be http or https
+    if parsed.scheme and parsed.scheme.lower() not in ("http", "https"):
+        return fallback
+
+    # Disallow user credentials in URL (e.g. http://localhost@evil.example)
+    if "@" in unquoted or "@" in (parsed.netloc or ""):
+        return fallback
+
+    # If absolute URL (netloc present), compare netloc against current request.host
+    if parsed.netloc:
+        def _norm_netloc(netloc, scheme):
+            netloc = (netloc or "").lower()
+            if scheme == "http" and netloc.endswith(":80"):
+                return netloc[:-3]
+            if scheme == "https" and netloc.endswith(":443"):
+                return netloc[:-4]
+            return netloc
+
+        req_host_norm = _norm_netloc(request.host, request.scheme)
+        target_host_norm = _norm_netloc(parsed.netloc, parsed.scheme)
+
+        if target_host_norm != req_host_norm:
+            return fallback
+
+        # Same-origin absolute URL: convert to relative path to ensure safe local redirection
+        path = parsed.path or "/"
+        if not path.startswith("/"):
+            path = "/" + path
+        if parsed.query:
+            path = f"{path}?{parsed.query}"
+        return path
+
+    # If relative path: must start with single '/' and not '//' or '/\'
+    if target.startswith("/") and not target.startswith("//"):
+        return target
+
+    return fallback
 
 
 def create_app(env=None):
@@ -51,7 +139,12 @@ def create_app(env=None):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 
     # --- Database ---
-    app.db = Database(app_config.DATABASE_PATH)
+    stale_timeout = getattr(app_config, "SCAN_STALE_TIMEOUT_SECONDS", 300)
+    app.db = Database(app_config.DATABASE_PATH, stale_timeout_seconds=stale_timeout)
+    try:
+        app.db.recover_stale_scans()
+    except Exception:
+        pass
 
     # --- CSRF Protection ---
     def get_csrf_token():
@@ -100,7 +193,7 @@ def create_app(env=None):
                 if request.path.startswith("/api/"):
                     return jsonify({"success": False, "error": "Invalid or missing CSRF token."}), 403
                 flash("Your session or security token expired. Please try again.", "error")
-                return redirect(request.referrer or url_for("main.home"))
+                return redirect(get_safe_redirect_target(request.referrer))
 
     # --- Rate limiting key function ---
     def get_rate_limit_key():
@@ -198,7 +291,7 @@ def create_app(env=None):
         if request.path.startswith("/api/"):
             return jsonify({"success": False, "error": "Rate limit exceeded. Please slow down."}), 429
         flash("Too many requests. Please wait a moment before trying again.", "error")
-        return redirect(request.referrer or url_for("main.home"))
+        return redirect(get_safe_redirect_target(request.referrer))
 
     @app.errorhandler(500)
     def server_error(e):

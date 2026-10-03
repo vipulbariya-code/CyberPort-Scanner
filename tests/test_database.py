@@ -270,3 +270,111 @@ class TestDualBackendCompatibility:
             raise DatabaseIntegrityError("duplicate key violates unique constraint")
         except sqlite3.IntegrityError as e:
             assert "duplicate key" in str(e)
+
+
+class TestStaleScanDatabaseRecovery:
+    def test_fresh_running_scan_not_reaped(self, db):
+        pw_hash = generate_password_hash("Password123")
+        uid = db.create_user("user_fresh", "user_fresh@example.com", pw_hash)
+
+        # Fresh running scan (created just now)
+        sid = db.create_scan(
+            uid, "192.168.1.1", "192.168.1.1", 1, 100, 0, [], 0.0, status="running"
+        )
+        assert sid > 0
+
+        # Run recovery with 300s timeout - fresh scan must not be modified
+        recovered = db.recover_stale_scans(user_id=uid, timeout_seconds=300)
+        assert recovered == 0
+
+        scan = db.get_scan(sid, uid)
+        assert scan["status"] == "running"
+        assert db.count_active_scans(uid, timeout_seconds=300) == 1
+
+    def test_old_running_scan_recovered_to_failed(self, db):
+        from datetime import datetime, timedelta, timezone
+        pw_hash = generate_password_hash("Password123")
+        uid = db.create_user("user_stale", "user_stale@example.com", pw_hash)
+
+        # Scan created 600 seconds in the past
+        past_ts = (datetime.now(timezone.utc) - timedelta(seconds=600)).isoformat()
+        sid = db.create_scan(
+            uid, "192.168.1.2", "192.168.1.2", 1, 50, 0, [], 0.0,
+            status="running", created_at=past_ts
+        )
+
+        # Recover with 300s threshold
+        recovered = db.recover_stale_scans(user_id=uid, timeout_seconds=300)
+        assert recovered == 1
+
+        scan = db.get_scan(sid, uid)
+        assert scan["status"] == "failed"
+        assert db.count_active_scans(uid, timeout_seconds=300) == 0
+
+    def test_completed_failed_cancelled_never_reaped(self, db):
+        from datetime import datetime, timedelta, timezone
+        pw_hash = generate_password_hash("Password123")
+        uid = db.create_user("user_terminal", "user_terminal@example.com", pw_hash)
+
+        ancient_ts = (datetime.now(timezone.utc) - timedelta(days=30)).isoformat()
+
+        sid_comp = db.create_scan(
+            uid, "192.168.1.1", "192.168.1.1", 1, 10, 10, [{"port": 80}], 1.5,
+            status="completed", created_at=ancient_ts
+        )
+        sid_fail = db.create_scan(
+            uid, "192.168.1.2", "192.168.1.2", 1, 10, 0, [], 0.0,
+            status="failed", created_at=ancient_ts
+        )
+        sid_canc = db.create_scan(
+            uid, "192.168.1.3", "192.168.1.3", 1, 10, 0, [], 0.0,
+            status="cancelled", created_at=ancient_ts
+        )
+
+        recovered = db.recover_stale_scans(user_id=uid, timeout_seconds=60)
+        assert recovered == 0
+
+        assert db.get_scan(sid_comp, uid)["status"] == "completed"
+        assert db.get_scan(sid_fail, uid)["status"] == "failed"
+        assert db.get_scan(sid_canc, uid)["status"] == "cancelled"
+
+    def test_user_isolation_in_stale_recovery(self, db):
+        from datetime import datetime, timedelta, timezone
+        pw_hash = generate_password_hash("Password123")
+        u1 = db.create_user("user_iso1", "iso1@example.com", pw_hash)
+        u2 = db.create_user("user_iso2", "iso2@example.com", pw_hash)
+
+        past_ts = (datetime.now(timezone.utc) - timedelta(seconds=600)).isoformat()
+
+        # u1 has a stale scan
+        s1 = db.create_scan(u1, "192.168.1.1", "192.168.1.1", 1, 10, 0, [], 0.0, status="running", created_at=past_ts)
+        # u2 has a fresh scan
+        s2 = db.create_scan(u2, "192.168.1.2", "192.168.1.2", 1, 10, 0, [], 0.0, status="running")
+
+        # Recovering u1 must not touch u2
+        db.recover_stale_scans(user_id=u1, timeout_seconds=300)
+
+        assert db.get_scan(s1, u1)["status"] == "failed"
+        assert db.get_scan(s2, u2)["status"] == "running"
+        assert db.count_active_scans(u1, timeout_seconds=300) == 0
+        assert db.count_active_scans(u2, timeout_seconds=300) == 1
+
+    def test_get_scan_and_list_scans_lazy_recovery(self, db):
+        from datetime import datetime, timedelta, timezone
+        pw_hash = generate_password_hash("Password123")
+        uid = db.create_user("user_lazy", "lazy@example.com", pw_hash)
+
+        past_ts = (datetime.now(timezone.utc) - timedelta(seconds=600)).isoformat()
+        sid = db.create_scan(
+            uid, "192.168.1.10", "192.168.1.10", 1, 20, 0, [], 0.0,
+            status="running", created_at=past_ts
+        )
+
+        # get_scan should lazily recover the scan
+        scan = db.get_scan(sid, uid, timeout_seconds=300)
+        assert scan["status"] == "failed"
+
+        # list_scans should also reflect the recovered state
+        items = db.list_scans(uid, timeout_seconds=300)["items"]
+        assert len(items) == 1
+        assert items[0]["status"] == "failed"

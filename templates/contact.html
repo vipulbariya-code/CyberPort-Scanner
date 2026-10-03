@@ -1,6 +1,25 @@
 {% extends "base.html" %}
-{% block title %}Contact — CyberPort Scanner{% endblock %}
-{% block description %}Get in touch with the CyberPort Scanner team for questions, feedback, or collaboration.{% endblock %}
+{% block title %}Contact CyberPort Scanner | Support &amp; Feedback{% endblock %}
+{% block description %}Get in touch with the CyberPort Scanner project for questions, network security feedback, bug reports, or collaboration.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "@id": "https://cyberport-scanner.onrender.com/contact#webpage",
+  "url": "https://cyberport-scanner.onrender.com/contact",
+  "name": "Contact CyberPort Scanner | Support & Feedback",
+  "description": "Get in touch with the CyberPort Scanner project for questions, network security feedback, bug reports, or collaboration.",
+  "inLanguage": "en-US",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "CyberPort Scanner",
+    "url": "https://cyberport-scanner.onrender.com/"
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="page-section">

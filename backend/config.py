@@ -55,6 +55,16 @@ class Config:
     # --- Pagination ---
     HISTORY_PAGE_SIZE = 10
 
+    # --- Stale scan recovery ---
+    # Scans remaining in 'running' status longer than this threshold (seconds)
+    # are treated as abandoned/stale (e.g. following worker crash or restart)
+    # and recovered to 'failed' so concurrent scan slots are not permanently blocked.
+    try:
+        _raw_stale_timeout = int(os.environ.get("SCAN_STALE_TIMEOUT_SECONDS", 300))
+        SCAN_STALE_TIMEOUT_SECONDS = _raw_stale_timeout if _raw_stale_timeout > 0 else 300
+    except (ValueError, TypeError):
+        SCAN_STALE_TIMEOUT_SECONDS = 300
+
 
 class DevelopmentConfig(Config):
     DEBUG = True
@@ -75,6 +85,7 @@ class TestingConfig(Config):
     RATE_LIMIT_API_DEFAULT = "1000 per minute"
     RATE_LIMIT_API_SCAN = "1000 per minute"
     MAX_CONCURRENT_SCANS_PER_USER = 5
+    SCAN_STALE_TIMEOUT_SECONDS = 300
 
 
 config_map = {

@@ -1,6 +1,25 @@
 {% extends "base.html" %}
-{% block title %}About — CyberPort Scanner{% endblock %}
-{% block description %}Learn how CyberPort Scanner works, the TCP scanning technique it uses, and the ethical guidelines behind it.{% endblock %}
+{% block title %}About CyberPort Scanner | Cybersecurity Learning Tool{% endblock %}
+{% block description %}Learn about CyberPort Scanner, an educational TCP port scanner built to teach network security, port diagnostics, and ethical reconnaissance fundamentals.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AboutPage",
+  "@id": "https://cyberport-scanner.onrender.com/about#webpage",
+  "url": "https://cyberport-scanner.onrender.com/about",
+  "name": "About CyberPort Scanner | Cybersecurity Learning Tool",
+  "description": "Learn about CyberPort Scanner, an educational TCP port scanner built to teach network security, port diagnostics, and ethical reconnaissance fundamentals.",
+  "inLanguage": "en-US",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "CyberPort Scanner",
+    "url": "https://cyberport-scanner.onrender.com/"
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <section class="page-section">
@@ -54,6 +73,18 @@
       <div>
         <h3>Built for learning, not offense</h3>
         <p>This project intentionally implements only a basic TCP connect scan and stops there — no service exploitation, no vulnerability scanning, no payload delivery. It's meant to be a clear, readable codebase for students studying networking, Flask, or full-stack development.</p>
+      </div>
+    </div>
+
+    <!-- Internal Linking CTA -->
+    <div class="glass-card reveal delay-2" style="margin-top:40px; padding:32px 28px; text-align:center;">
+      <h2 style="font-family:var(--font-ui); font-size:1.4rem; font-weight:700; margin-bottom:12px;">Ready to Explore Network Security?</h2>
+      <p style="color:var(--text-secondary); max-width:580px; margin:0 auto 24px; font-size:0.95rem;">
+        Launch an authorized scan on your local lab target or integrate diagnostic capabilities with our REST API.
+      </p>
+      <div style="display:flex; justify-content:center; gap:16px; flex-wrap:wrap;">
+        <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary"><i class="fa-solid fa-bolt"></i> Launch Scanner</a>
+        <a href="{{ url_for('main.api_docs') }}" class="btn btn-outline"><i class="fa-solid fa-book-open"></i> API Documentation</a>
       </div>
     </div>
 

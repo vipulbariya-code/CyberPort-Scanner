@@ -186,8 +186,13 @@ class Database:
     or falls back to SQLite for local development and in-memory test suites.
     """
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str, stale_timeout_seconds: int = 300):
         self.db_path = db_path
+        self.stale_timeout_seconds = (
+            stale_timeout_seconds
+            if (isinstance(stale_timeout_seconds, int) and stale_timeout_seconds > 0)
+            else 300
+        )
         self._shared_conn = None
         self.is_postgres = bool(
             self.db_path
@@ -443,10 +448,11 @@ class Database:
 
     def create_scan(self, user_id, target, resolved_ip, start_port, end_port,
                      total_ports_scanned, open_ports, duration_seconds,
-                     status="completed"):
+                     status="completed", created_at=None):
         open_ports_count = len(open_ports)
         closed_ports_count = max(total_ports_scanned - open_ports_count, 0)
-        created_at = datetime.now(timezone.utc).isoformat()
+        if not created_at:
+            created_at = datetime.now(timezone.utc).isoformat()
         ports_json = json.dumps(open_ports)
 
         with self.get_connection() as conn:
@@ -525,7 +531,83 @@ class Database:
             cursor = conn.execute(f"UPDATE scans SET {', '.join(fields)} {where}", values)
             return cursor.rowcount > 0
 
-    def count_active_scans(self, user_id):
+    def recover_stale_scans(self, user_id=None, timeout_seconds=None):
+        """
+        Recovers abandoned/stale scans stuck in 'running' status (e.g. following worker crash or reboot).
+        Scans remaining 'running' longer than timeout_seconds are transitioned to 'failed'.
+        Completed, failed, and cancelled scans are never modified.
+        Safe against race conditions via atomic transactional update.
+        Returns the number of recovered scans.
+        """
+        if timeout_seconds is None:
+            timeout_seconds = self.stale_timeout_seconds
+        try:
+            timeout_seconds = int(timeout_seconds)
+            if timeout_seconds <= 0:
+                timeout_seconds = self.stale_timeout_seconds
+        except (ValueError, TypeError):
+            timeout_seconds = self.stale_timeout_seconds
+
+        now = datetime.now(timezone.utc)
+        recovered_count = 0
+
+        with self.get_connection() as conn:
+            if user_id is not None:
+                cursor = conn.execute(
+                    "SELECT id, created_at FROM scans WHERE user_id = ? AND status = 'running'",
+                    (user_id,),
+                )
+            else:
+                cursor = conn.execute(
+                    "SELECT id, created_at FROM scans WHERE status = 'running'"
+                )
+
+            rows = cursor.fetchall()
+            if not rows:
+                return 0
+
+            stale_ids = []
+            for r in rows:
+                scan_id = r["id"] if isinstance(r, dict) else r[0]
+                created_at_val = r["created_at"] if isinstance(r, dict) else r[1]
+                is_stale = False
+                try:
+                    s = str(created_at_val).strip()
+                    if s.endswith("Z"):
+                        s = s[:-1] + "+00:00"
+                    dt = datetime.fromisoformat(s)
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    age = (now - dt).total_seconds()
+                    if age >= timeout_seconds:
+                        is_stale = True
+                except Exception:
+                    is_stale = True
+
+                if is_stale:
+                    stale_ids.append(scan_id)
+
+            if stale_ids:
+                placeholders = ", ".join("?" for _ in stale_ids)
+                update_sql = (
+                    f"UPDATE scans SET status = 'failed' "
+                    f"WHERE id IN ({placeholders}) AND status = 'running'"
+                )
+                cursor = conn.execute(update_sql, tuple(stale_ids))
+                recovered_count = (
+                    cursor.rowcount
+                    if (cursor.rowcount is not None and cursor.rowcount >= 0)
+                    else len(stale_ids)
+                )
+
+        return recovered_count
+
+    def count_active_scans(self, user_id, timeout_seconds=None):
+        """
+        Returns the number of active (non-stale) running scans for the given user.
+        Recovers any abandoned/stale scans first so they cannot block concurrency.
+        """
+        self.recover_stale_scans(user_id=user_id, timeout_seconds=timeout_seconds)
         with self.get_connection() as conn:
             row = conn.execute(
                 "SELECT COUNT(*) FROM scans WHERE user_id = ? AND status = 'running'",
@@ -651,14 +733,40 @@ class Database:
     # ---------------------------------------------------------------
     # Read operations
     # ---------------------------------------------------------------
-    def get_scan(self, scan_id, user_id):
+    def get_scan(self, scan_id, user_id, timeout_seconds=None):
+        if timeout_seconds is None:
+            timeout_seconds = self.stale_timeout_seconds
         with self.get_connection() as conn:
             row = conn.execute(
                 "SELECT * FROM scans WHERE id = ? AND user_id = ?", (scan_id, user_id)
             ).fetchone()
-            return self._row_to_dict(row) if row else None
+            if not row:
+                return None
+            d = self._row_to_dict(row)
+            if d.get("status") == "running":
+                is_stale = False
+                try:
+                    s = str(d.get("created_at", "")).strip()
+                    if s.endswith("Z"):
+                        s = s[:-1] + "+00:00"
+                    dt = datetime.fromisoformat(s)
+                    if dt.tzinfo is None:
+                        dt = dt.replace(tzinfo=timezone.utc)
+                    if (datetime.now(timezone.utc) - dt).total_seconds() >= timeout_seconds:
+                        is_stale = True
+                except Exception:
+                    is_stale = True
 
-    def list_scans(self, user_id, page=1, page_size=10, search=None):
+                if is_stale:
+                    conn.execute(
+                        "UPDATE scans SET status = 'failed' WHERE id = ? AND status = 'running'",
+                        (scan_id,),
+                    )
+                    d["status"] = "failed"
+            return d
+
+    def list_scans(self, user_id, page=1, page_size=10, search=None, timeout_seconds=None):
+        self.recover_stale_scans(user_id=user_id, timeout_seconds=timeout_seconds)
         page = max(1, page)
         offset = (page - 1) * page_size
         with self.get_connection() as conn:

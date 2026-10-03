@@ -575,7 +575,7 @@
                         
                         <!-- Code Block -->
                         <div class="bg-[#0d1117] rounded-lg p-4 border border-gray-800 font-mono text-sm mb-8 text-gray-300 relative group">
-                            <button onclick="copyCode()" class="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors" aria-label="Copy code" title="Copy to clipboard">
+                            <button onclick="copyCode(event)" class="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors" aria-label="Copy code" title="Copy to clipboard">
                                 <i class="fa-regular fa-copy"></i>
                             </button>
                             <span class="text-pink-400">curl</span> <span class="text-yellow-300">-X</span> POST https://cyberport-scanner.onrender.com/api/v1/scans \<br>
@@ -691,7 +691,7 @@
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
 
-        function copyCode() {
+        function copyCode(event) {
             const code = `curl -X POST https://cyberport-scanner.onrender.com/api/v1/scans \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json"`;
@@ -704,13 +704,16 @@
                 document.execCommand("copy");
                 textArea.remove();
                 
-                const btn = event.currentTarget;
-                const icon = btn.querySelector('i');
-                if (icon) {
-                    icon.className = 'fa-solid fa-check text-green-400';
-                    setTimeout(() => {
-                        icon.className = 'fa-regular fa-copy';
-                    }, 2000);
+                const btn = (event && (event.currentTarget || (event.target && event.target.closest('button'))))
+                    || document.querySelector('[aria-label="Copy code"]');
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        icon.className = 'fa-solid fa-check text-green-400';
+                        setTimeout(() => {
+                            icon.className = 'fa-regular fa-copy';
+                        }, 2000);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to copy text: ', err);

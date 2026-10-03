@@ -512,6 +512,111 @@ class TestRateLimitingAndConcurrency:
         assert data["success"] is False
         assert data["error"]["code"] == "CONCURRENT_SCAN_LIMIT"
 
+    def test_stale_scan_recovered_and_allows_new_scan(self, client, auth_user, auth_headers, app):
+        from datetime import datetime, timedelta, timezone
+        with app.app_context():
+            app.config["MAX_CONCURRENT_SCANS_PER_USER"] = 2
+            app.config["SCAN_STALE_TIMEOUT_SECONDS"] = 300
+            past_ts = (datetime.now(timezone.utc) - timedelta(seconds=600)).isoformat()
+            # Insert 2 stale 'running' scans (older than 300s)
+            s1 = app.db.create_scan(
+                user_id=auth_user["user_id"], target="127.0.0.1", resolved_ip="127.0.0.1",
+                start_port=1, end_port=10, total_ports_scanned=0, open_ports=[],
+                duration_seconds=0.0, status="running", created_at=past_ts
+            )
+            s2 = app.db.create_scan(
+                user_id=auth_user["user_id"], target="127.0.0.1", resolved_ip="127.0.0.1",
+                start_port=11, end_port=20, total_ports_scanned=0, open_ports=[],
+                duration_seconds=0.0, status="running", created_at=past_ts
+            )
+
+        # Creating a new scan should recover the 2 stale scans and allow the new one
+        res = client.post(
+            "/api/v1/scans",
+            headers=auth_headers,
+            json={"target": "127.0.0.1", "start_port": 21, "end_port": 30}
+        )
+        assert res.status_code == 201
+        data = res.get_json()
+        assert data["success"] is True
+        assert data["status"] == "running"
+
+        # Verify old scans were transitioned to failed
+        with app.app_context():
+            assert app.db.get_scan(s1, auth_user["user_id"])["status"] == "failed"
+            assert app.db.get_scan(s2, auth_user["user_id"])["status"] == "failed"
+
+    def test_worker_restart_recovery_workflow(self, client, auth_user, auth_headers, app):
+        """
+        Regression test representing:
+        Worker restarts while scan is running -> database still says running ->
+        user later creates another scan -> stale scan is recovered -> new scan is allowed.
+        """
+        from datetime import datetime, timedelta, timezone
+        with app.app_context():
+            app.config["MAX_CONCURRENT_SCANS_PER_USER"] = 1
+            app.config["SCAN_STALE_TIMEOUT_SECONDS"] = 60
+
+            # Scan was initiated before worker crashed / container recycled 10 minutes ago
+            abandoned_ts = (datetime.now(timezone.utc) - timedelta(minutes=10)).isoformat()
+            abandoned_id = app.db.create_scan(
+                user_id=auth_user["user_id"], target="192.168.1.1", resolved_ip="192.168.1.1",
+                start_port=1, end_port=50, total_ports_scanned=0, open_ports=[],
+                duration_seconds=0.0, status="running", created_at=abandoned_ts
+            )
+
+        # Check that individual status endpoint lazily recovers it to failed
+        status_res = client.get(f"/api/v1/scans/{abandoned_id}", headers=auth_headers)
+        assert status_res.status_code == 200
+        assert status_res.get_json()["scan"]["status"] == "failed"
+
+        # User submits a new scan - should succeed since concurrent slot is freed
+        new_scan_res = client.post(
+            "/api/v1/scans",
+            headers=auth_headers,
+            json={"target": "127.0.0.1", "start_port": 80, "end_port": 85}
+        )
+        assert new_scan_res.status_code == 201
+        assert new_scan_res.get_json()["success"] is True
+
+    def test_user_isolation_stale_recovery(self, client, auth_user, auth_headers, app):
+        from datetime import datetime, timedelta, timezone
+        from werkzeug.security import generate_password_hash
+
+        with app.app_context():
+            app.config["MAX_CONCURRENT_SCANS_PER_USER"] = 2
+            app.config["SCAN_STALE_TIMEOUT_SECONDS"] = 300
+            past_ts = (datetime.now(timezone.utc) - timedelta(seconds=600)).isoformat()
+
+            # Create another user with a fresh running scan
+            other_uid = app.db.create_user("other_u", "other_u@example.com", generate_password_hash("Pass123!"))
+            other_sid = app.db.create_scan(
+                user_id=other_uid, target="127.0.0.1", resolved_ip="127.0.0.1",
+                start_port=1, end_port=10, total_ports_scanned=0, open_ports=[],
+                duration_seconds=0.0, status="running"
+            )
+
+            # Current user has a stale running scan
+            my_stale_sid = app.db.create_scan(
+                user_id=auth_user["user_id"], target="127.0.0.1", resolved_ip="127.0.0.1",
+                start_port=1, end_port=10, total_ports_scanned=0, open_ports=[],
+                duration_seconds=0.0, status="running", created_at=past_ts
+            )
+
+        # Recovering for current user
+        res = client.post(
+            "/api/v1/scans",
+            headers=auth_headers,
+            json={"target": "127.0.0.1", "start_port": 20, "end_port": 25}
+        )
+        assert res.status_code == 201
+
+        with app.app_context():
+            # Current user's stale scan is failed
+            assert app.db.get_scan(my_stale_sid, auth_user["user_id"])["status"] == "failed"
+            # Other user's fresh running scan is still running!
+            assert app.db.get_scan(other_sid, other_uid)["status"] == "running"
+
 
 class TestOpenAPIAndDocsRoutes:
     def test_openapi_spec_structure(self, client):
