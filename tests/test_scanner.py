@@ -130,6 +130,89 @@ class TestPortScannerEngine:
         assert results["open_ports"][0]["service"] == "HTTP"
         assert results["closed_count"] == 1
 
+    @patch("socket.socket")
+    def test_all_scanned_ports_returned_with_open_and_closed(self, mock_socket_class):
+        mock_sock = MagicMock()
+        mock_socket_class.return_value = mock_sock
+        # Port 22: closed (111), Port 80: open (0), Port 443: open (0)
+        mock_sock.connect_ex.side_effect = lambda addr: 0 if addr[1] in (80, 443) else 111
+
+        scanner = PortScanner(target_ip="127.0.0.1", start_port=22, end_port=443, timeout=0.1)
+        results = scanner.run()
+
+        # Check total scanned and full scanned_ports presence
+        assert "scanned_ports" in results
+        assert len(results["scanned_ports"]) == (443 - 22 + 1)
+        assert len(results["open_ports"]) == 2
+
+        # Verify open ports
+        open_ports_list = [p["port"] for p in results["open_ports"]]
+        assert open_ports_list == [80, 443]
+
+        # Verify port 22 in scanned_ports
+        port_22 = next(p for p in results["scanned_ports"] if p["port"] == 22)
+        assert port_22["status"] == "CLOSED"
+        assert port_22["state"] == "closed"
+        assert port_22["service"] == "SSH"
+
+        # Verify port 80 in scanned_ports
+        port_80 = next(p for p in results["scanned_ports"] if p["port"] == 80)
+        assert port_80["status"] == "OPEN"
+        assert port_80["state"] == "open"
+        assert port_80["service"] == "HTTP"
+
+    @patch("socket.socket")
+    def test_zero_open_ports_scan_displays_all_scanned_ports(self, mock_socket_class):
+        mock_sock = MagicMock()
+        mock_socket_class.return_value = mock_sock
+        # All ports closed
+        mock_sock.connect_ex.return_value = 111
+
+        scanner = PortScanner(target_ip="127.0.0.1", start_port=1, end_port=5, timeout=0.1)
+        results = scanner.run()
+
+        assert results["total_scanned"] == 5
+        assert len(results["open_ports"]) == 0
+        assert len(results["scanned_ports"]) == 5
+        assert results["closed_count"] == 5
+        for p in results["scanned_ports"]:
+            assert p["status"] == "CLOSED"
+            assert p["state"] == "closed"
+
+    @patch("socket.socket")
+    def test_filtered_and_error_handling(self, mock_socket_class):
+        mock_sock = MagicMock()
+        mock_socket_class.return_value = mock_sock
+
+        def mock_connect(addr):
+            port = addr[1]
+            if port == 80:
+                return 0  # OPEN
+            elif port == 22:
+                return 111  # CLOSED (ECONNREFUSED)
+            elif port == 23:
+                return 110  # FILTERED (ETIMEDOUT)
+            elif port == 25:
+                raise socket.timeout("Timed out")  # FILTERED
+            elif port == 53:
+                raise Exception("Fatal connection failure")  # ERROR
+            return 111
+
+        mock_sock.connect_ex.side_effect = mock_connect
+
+        scanner = PortScanner(target_ip="127.0.0.1", start_port=22, end_port=80, timeout=0.1)
+        results = scanner.run()
+
+        # Check port statuses
+        scanned_dict = {p["port"]: p for p in results["scanned_ports"]}
+        assert scanned_dict[80]["status"] == "OPEN"
+        assert scanned_dict[22]["status"] == "CLOSED"
+        assert scanned_dict[23]["status"] == "FILTERED"
+        assert scanned_dict[25]["status"] == "FILTERED"
+        assert scanned_dict[53]["status"] == "ERROR"
+        assert scanned_dict[80]["service"] == "HTTP"
+        assert scanned_dict[22]["service"] == "SSH"
+
     def test_scanner_cancellation(self):
         scanner = PortScanner(target_ip="127.0.0.1", start_port=1, end_port=100)
         scanner.cancel()

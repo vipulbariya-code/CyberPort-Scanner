@@ -337,3 +337,63 @@ class TestStatsEndpoint:
         assert data["success"] is True
         assert "total_scans" in data["data"]
         assert data["data"]["last_scan"] is None  # no leaking of user details
+
+
+class TestScannedPortsUIAndResults:
+    def test_dashboard_page_has_scanned_ports_ui(self, client, app):
+        with app.app_context():
+            uid = app.db.create_user("dash_user", "dash@test.com", "hash")
+        with client.session_transaction() as sess:
+            sess["user_id"] = uid
+            sess["username"] = "dash_user"
+
+        res = client.get("/dashboard")
+        assert res.status_code == 200
+        html = res.data.decode("utf-8")
+
+        assert "Scanned Ports" in html
+        assert 'id="no-open-ports-alert"' in html
+        assert 'id="scan-error-alert"' in html
+        assert 'data-status-filter="all"' in html
+        assert 'data-status-filter="open"' in html
+        assert 'data-status-filter="closed"' in html
+        assert 'data-status-filter="filtered"' in html
+        assert "Status" in html
+        assert "Service" in html
+        assert 'id="summary-scanned"' in html
+
+    def test_scan_job_completion_returns_scanned_ports(self, client, app):
+        import time
+        with app.app_context():
+            uid = app.db.create_user("scan_res_user", "scanres@test.com", "hash")
+        with client.session_transaction() as sess:
+            sess["user_id"] = uid
+            sess["username"] = "scan_res_user"
+
+        res = client.post("/api/scan/start", json={
+            "target": "127.0.0.1", "start_port": 65530, "end_port": 65532, "authorized": True
+        })
+        assert res.status_code == 200
+        job_id = res.get_json()["job_id"]
+
+        # Wait for scan job to complete
+        for _ in range(30):
+            time.sleep(0.1)
+            status_res = client.get(f"/api/scan/status/{job_id}")
+            assert status_res.status_code == 200
+            data = status_res.get_json()
+            if data.get("status") == "completed":
+                break
+
+        assert data["status"] == "completed"
+        result = data.get("result", {})
+        assert "scanned_ports" in result
+        assert len(result["scanned_ports"]) == 3
+        ports = [p["port"] for p in result["scanned_ports"]]
+        assert ports == [65530, 65531, 65532]
+        for p in result["scanned_ports"]:
+            assert "port" in p
+            assert "service" in p
+            assert "status" in p
+            assert p["status"] in ("OPEN", "CLOSED", "FILTERED", "ERROR")
+            assert "state" in p

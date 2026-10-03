@@ -22,6 +22,7 @@
   const progressElapsed = document.getElementById('progress-elapsed');
   const progressOpen = document.getElementById('progress-open');
   const scanPanel = document.getElementById('scan-panel');
+  const scanErrorAlert = document.getElementById('scan-error-alert');
 
   const resultsPanel = document.getElementById('results-panel');
   const resultsBody = document.getElementById('results-body');
@@ -32,7 +33,21 @@
   const btnExport = document.getElementById('btn-export-csv');
   const btnCopy = document.getElementById('btn-copy-results');
 
-  let currentResults = [];
+  const noOpenPortsAlert = document.getElementById('no-open-ports-alert');
+  const summaryTarget = document.getElementById('summary-target');
+  const summaryScanned = document.getElementById('summary-scanned');
+  const summaryOpen = document.getElementById('summary-open');
+  const summaryDuration = document.getElementById('summary-duration');
+
+  const countAll = document.getElementById('count-all');
+  const countOpen = document.getElementById('count-open');
+  const countClosed = document.getElementById('count-closed');
+  const countFiltered = document.getElementById('count-filtered');
+  const filterBtnFiltered = document.getElementById('filter-btn-filtered');
+
+  let allScannedPorts = [];
+  let currentFilteredRows = [];
+  let activeStatusFilter = 'all';
   let sortState = { key: 'port', dir: 1 };
   let pollTimer = null;
   let elapsedTimer = null;
@@ -115,8 +130,16 @@
       cancelBtn.innerHTML = '<i class="fa-solid fa-stop"></i> Cancel';
     }
     scanPanel.classList.add('scanning');
+    if (scanErrorAlert) {
+      scanErrorAlert.style.display = 'none';
+      scanErrorAlert.textContent = '';
+    }
+    if (noOpenPortsAlert) {
+      noOpenPortsAlert.style.display = 'none';
+    }
     resultsPanel.style.display = 'none';
-    currentResults = [];
+    allScannedPorts = [];
+    currentFilteredRows = [];
 
     try {
       const res = await apiRequest('/api/scan/start', {
@@ -136,6 +159,10 @@
       Toast.show(`Scan started on ${res.resolved_ip} — ${res.total_ports} ports queued.`, 'info');
     } catch (err) {
       Toast.show(err.message, 'error');
+      if (scanErrorAlert) {
+        scanErrorAlert.textContent = err.message || 'Failed to start scan.';
+        scanErrorAlert.style.display = 'block';
+      }
       stopScanningState();
     }
   });
@@ -176,6 +203,10 @@
         } else if (res.status === 'error') {
           stopTimers();
           Toast.show(res.error || 'Scan failed.', 'error');
+          if (scanErrorAlert) {
+            scanErrorAlert.textContent = res.error || 'Scan failed. Please verify your target and try again.';
+            scanErrorAlert.style.display = 'block';
+          }
           stopScanningState();
         } else if (res.status === 'cancelled') {
           stopTimers();
@@ -185,6 +216,10 @@
       } catch (err) {
         stopTimers();
         Toast.show(err.message, 'error');
+        if (scanErrorAlert) {
+          scanErrorAlert.textContent = err.message || 'Error communicating with scanner backend.';
+          scanErrorAlert.style.display = 'block';
+        }
         stopScanningState();
       }
     }, 400);
@@ -215,31 +250,132 @@
     progressOpen.textContent = res.open_count;
   }
 
+  function updateFilterButtonUI() {
+    document.querySelectorAll('.results-filter-buttons [data-status-filter]').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.statusFilter === activeStatusFilter);
+    });
+  }
+
+  document.querySelectorAll('.results-filter-buttons [data-status-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeStatusFilter = btn.dataset.statusFilter;
+      updateFilterButtonUI();
+      renderResults();
+    });
+  });
+
   function onScanComplete(res) {
     stopScanningState();
-    Toast.show(`Scan complete — ${res.result.open_ports.length} open port(s) found.`, 'success');
+    if (scanErrorAlert) scanErrorAlert.style.display = 'none';
 
-    currentResults = res.result.open_ports.map((p) => ({ ...p }));
+    const result = res.result || {};
+    const openCount = (result.open_ports || []).length;
+    Toast.show(`Scan complete — ${openCount} open port(s) found.`, 'success');
+
+    // Extract all scanned ports
+    if (result.scanned_ports && Array.isArray(result.scanned_ports)) {
+      allScannedPorts = result.scanned_ports.map((p) => ({
+        port: Number(p.port),
+        service: p.service || 'Unknown',
+        state: (p.state || 'closed').toLowerCase(),
+        status: (p.status || p.state || 'CLOSED').toUpperCase(),
+      }));
+    } else if (result.open_ports && Array.isArray(result.open_ports)) {
+      allScannedPorts = result.open_ports.map((p) => ({
+        port: Number(p.port),
+        service: p.service || 'Unknown',
+        state: (p.state || 'open').toLowerCase(),
+        status: (p.status || p.state || 'OPEN').toUpperCase(),
+      }));
+    } else {
+      allScannedPorts = [];
+    }
+
     lastDbScanId = res.db_scan_id;
-    resultsPanel.style.display = 'block';
     if (btnExport) btnExport.dataset.scanId = lastDbScanId;
+
+    // Update Summary Header Chips
+    if (summaryTarget) summaryTarget.textContent = res.target || res.resolved_ip || result.target_ip || '—';
+    if (summaryScanned) summaryScanned.textContent = result.total_scanned || res.total || allScannedPorts.length;
+    if (summaryOpen) summaryOpen.textContent = openCount;
+    if (summaryDuration) summaryDuration.textContent = `${result.duration_seconds || 0}s`;
+
+    // Filter counts
+    const numOpen = allScannedPorts.filter((p) => p.status === 'OPEN').length;
+    const numClosed = allScannedPorts.filter((p) => p.status === 'CLOSED').length;
+    const numFiltered = allScannedPorts.filter((p) => p.status === 'FILTERED' || p.status === 'ERROR').length;
+
+    if (countAll) countAll.textContent = allScannedPorts.length;
+    if (countOpen) countOpen.textContent = numOpen;
+    if (countClosed) countClosed.textContent = numClosed;
+    if (countFiltered) countFiltered.textContent = numFiltered;
+
+    if (filterBtnFiltered) {
+      filterBtnFiltered.style.display = numFiltered > 0 ? 'inline-flex' : 'none';
+    }
+
+    // Requirement 10: "Agar koi port open nahi hai, 'No open ports found' dikhao, lekin scanned-port results hide mat karo."
+    if (noOpenPortsAlert) {
+      noOpenPortsAlert.style.display = openCount === 0 ? 'block' : 'none';
+    }
+
+    activeStatusFilter = 'all';
+    updateFilterButtonUI();
+
+    resultsPanel.style.display = 'block';
     renderResults();
     refreshDashboardStats();
   }
 
   // -------------------------------------------------------------
-  // Results table: search, sort
+  // Results table: search, sort, render
   // -------------------------------------------------------------
-  function renderResults() {
-    let rows = [...currentResults];
+  function getStatusPill(status, state) {
+    const s = (status || state || 'CLOSED').toUpperCase();
+    if (s === 'OPEN') {
+      return '<span class="pill pill-open"><span class="pill-dot pulse"></span>OPEN</span>';
+    } else if (s === 'FILTERED') {
+      return '<span class="pill pill-filtered"><span class="pill-dot"></span>FILTERED</span>';
+    } else if (s === 'ERROR') {
+      return '<span class="pill pill-error"><span class="pill-dot"></span>ERROR</span>';
+    }
+    return '<span class="pill pill-closed"><span class="pill-dot"></span>CLOSED</span>';
+  }
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
+  function renderResults() {
+    let rows = [...allScannedPorts];
+
+    // Status Filter
+    if (activeStatusFilter === 'open') {
+      rows = rows.filter((r) => r.status === 'OPEN');
+    } else if (activeStatusFilter === 'closed') {
+      rows = rows.filter((r) => r.status === 'CLOSED');
+    } else if (activeStatusFilter === 'filtered') {
+      rows = rows.filter((r) => r.status === 'FILTERED' || r.status === 'ERROR');
+    }
+
+    // Search query (matches port, service, or status)
     const q = (resultsSearch.value || '').toLowerCase().trim();
     if (q) {
       rows = rows.filter(
-        (r) => String(r.port).includes(q) || r.service.toLowerCase().includes(q)
+        (r) =>
+          String(r.port).includes(q) ||
+          r.service.toLowerCase().includes(q) ||
+          r.status.toLowerCase().includes(q)
       );
     }
 
+    // Sort
     rows.sort((a, b) => {
       let av = a[sortState.key];
       let bv = b[sortState.key];
@@ -249,8 +385,10 @@
       return (av - bv) * sortState.dir;
     });
 
+    currentFilteredRows = rows;
+
     // Update sort header icons
-    ['port', 'service', 'state'].forEach((col) => {
+    ['port', 'status', 'service'].forEach((col) => {
       const icon = document.getElementById(`sort-icon-${col}`);
       if (icon) {
         if (sortState.key === col) {
@@ -261,19 +399,21 @@
       }
     });
 
-    if (q) {
-      resultsCount.textContent = `Showing ${rows.length} of ${currentResults.length} open ports`;
+    if (q || activeStatusFilter !== 'all') {
+      resultsCount.textContent = `Showing ${rows.length} of ${allScannedPorts.length} scanned ports`;
     } else {
-      resultsCount.textContent = `${rows.length} open port${rows.length !== 1 ? 's' : ''} found`;
+      resultsCount.textContent = `${rows.length} port${rows.length !== 1 ? 's' : ''} scanned`;
     }
 
     if (!rows.length) {
       resultsBody.innerHTML = '';
       if (resultsEmptyMsg) {
-        if (currentResults.length === 0) {
-          resultsEmptyMsg.textContent = 'No open ports detected in this range (all scanned ports closed or filtered).';
+        if (allScannedPorts.length === 0) {
+          resultsEmptyMsg.textContent = 'No scan results available.';
+        } else if (q) {
+          resultsEmptyMsg.textContent = 'No scanned ports match your search query.';
         } else {
-          resultsEmptyMsg.textContent = 'No open ports match your search query.';
+          resultsEmptyMsg.textContent = `No ${activeStatusFilter.toUpperCase()} ports found.`;
         }
       }
       resultsEmpty.style.display = 'block';
@@ -283,11 +423,11 @@
 
     resultsBody.innerHTML = rows
       .map(
-        (r, i) => `
-        <tr class="row-in" style="animation-delay:${Math.min(i * 25, 400)}ms">
-          <td>${r.port}</td>
-          <td>${r.service}</td>
-          <td><span class="pill pill-open"><span class="pill-dot pulse"></span>OPEN</span></td>
+        (r) => `
+        <tr class="row-in">
+          <td style="font-weight:600; font-family:var(--font-mono);">${r.port}</td>
+          <td>${getStatusPill(r.status, r.state)}</td>
+          <td style="color:var(--text-secondary);">${escapeHtml(r.service)}</td>
         </tr>`
       )
       .join('');
@@ -316,18 +456,19 @@
   });
 
   btnCopy.addEventListener('click', async () => {
-    if (!currentResults.length) {
-      Toast.show('No open port results to copy.', 'info');
+    const dataToCopy = currentFilteredRows.length ? currentFilteredRows : allScannedPorts;
+    if (!dataToCopy.length) {
+      Toast.show('No scan results to copy.', 'info');
       return;
     }
-    const header = 'Port\tService\tState';
-    const text = currentResults.map((r) => `${r.port}\t${r.service}\t${r.state}`).join('\n');
+    const header = 'Port\tStatus\tService';
+    const text = dataToCopy.map((r) => `${r.port}\t${r.status}\t${r.service}`).join('\n');
     const fullText = `${header}\n${text}`;
 
     if (navigator.clipboard && navigator.clipboard.writeText) {
       try {
         await navigator.clipboard.writeText(fullText);
-        Toast.show('Results copied to clipboard.', 'success');
+        Toast.show(`Copied ${dataToCopy.length} port result(s) to clipboard.`, 'success');
         return;
       } catch {
         // Fallback below
@@ -343,7 +484,7 @@
     ta.select();
     try {
       document.execCommand('copy');
-      Toast.show('Results copied to clipboard.', 'success');
+      Toast.show(`Copied ${dataToCopy.length} port result(s) to clipboard.`, 'success');
     } catch {
       Toast.show('Could not copy — clipboard access denied.', 'error');
     } finally {

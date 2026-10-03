@@ -22,6 +22,7 @@ import threading
 import time
 import ipaddress
 import re
+import errno
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Queue
 
@@ -175,18 +176,48 @@ class PortScanner:
         self._cancelled = True
 
     def _scan_port(self, port: int):
-        """Attempt a TCP handshake on a single port. Returns True if open."""
+        """
+        Attempt a TCP handshake on a single port.
+        Returns a dict with port status: 'open', 'closed', 'filtered', or 'error'.
+        """
         if self._cancelled:
-            return False
+            return {"port": port, "state": "cancelled", "status": "CANCELLED"}
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(self.timeout)
         try:
             result = sock.connect_ex((self.target_ip, port))
-            return result == 0
+            if result == 0:
+                state = "open"
+                status = "OPEN"
+            elif result in (errno.ECONNREFUSED, 111, 10061):
+                state = "closed"
+                status = "CLOSED"
+            elif result in (
+                errno.ETIMEDOUT, 110, 10060,
+                getattr(errno, "EHOSTUNREACH", 113),
+                getattr(errno, "ENETUNREACH", 101),
+                10051, 10065,
+            ):
+                state = "filtered"
+                status = "FILTERED"
+            else:
+                # Other non-zero code (e.g. 10035 WSAEWOULDBLOCK on Windows non-blocking timeout/refusal)
+                state = "closed"
+                status = "CLOSED"
+            return {"port": port, "state": state, "status": status}
+        except (socket.timeout, TimeoutError):
+            return {"port": port, "state": "filtered", "status": "FILTERED"}
+        except ConnectionRefusedError:
+            return {"port": port, "state": "closed", "status": "CLOSED"}
         except socket.error:
-            return False
+            return {"port": port, "state": "filtered", "status": "FILTERED"}
+        except Exception:
+            return {"port": port, "state": "error", "status": "ERROR"}
         finally:
-            sock.close()
+            try:
+                sock.close()
+            except Exception:
+                pass
 
     def run(self, progress_callback=None):
         """
@@ -197,6 +228,7 @@ class PortScanner:
         total = len(ports)
         start_time = time.time()
         open_ports = []
+        scanned_ports = []
         scanned = 0
 
         workers = max(1, min(self.max_threads, total)) if total > 0 else 1
@@ -209,16 +241,38 @@ class PortScanner:
                     break
                 port = future_to_port[future]
                 try:
-                    is_open = future.result()
+                    res = future.result()
+                    if isinstance(res, dict):
+                        state = res.get("state", "closed")
+                        status = res.get("status", state.upper())
+                    elif isinstance(res, bool):
+                        state = "open" if res else "closed"
+                        status = "OPEN" if res else "CLOSED"
+                    else:
+                        state = "closed"
+                        status = "CLOSED"
                 except Exception:
-                    is_open = False
+                    state = "error"
+                    status = "ERROR"
+
                 scanned += 1
-                if is_open:
+                service = get_service_name(port)
+                port_entry = {
+                    "port": port,
+                    "service": service,
+                    "state": state,
+                    "status": status,
+                }
+                scanned_ports.append(port_entry)
+
+                if state == "open":
                     open_ports.append({
                         "port": port,
-                        "service": get_service_name(port),
+                        "service": service,
                         "state": "open",
+                        "status": "OPEN",
                     })
+
                 if progress_callback:
                     try:
                         progress_callback(scanned, total, len(open_ports))
@@ -226,6 +280,7 @@ class PortScanner:
                         pass
 
         open_ports.sort(key=lambda x: x["port"])
+        scanned_ports.sort(key=lambda x: x["port"])
         duration = round(time.time() - start_time, 2)
 
         return {
@@ -234,6 +289,7 @@ class PortScanner:
             "end_port": self.end_port,
             "total_scanned": scanned,
             "open_ports": open_ports,
+            "scanned_ports": scanned_ports,
             "closed_count": scanned - len(open_ports),
             "duration_seconds": duration,
         }

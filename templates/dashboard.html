@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Scanner Dashboard — CyberPort Scanner{% endblock %}
-{% block description %}Run authorized TCP port scans, track live progress, and browse a searchable, sortable results table.{% endblock %}
+{% block title %}CyberPort Scanner Dashboard | TCP Port Scanner{% endblock %}
+{% block description %}Interactive TCP port scanner dashboard for authorized security analysis, common service detection, and real-time network diagnostics.{% endblock %}
+{% block robots %}noindex, nofollow{% endblock %}
 
 {% block content %}
 <section class="page-section tight">
@@ -93,22 +94,39 @@
       </form>
     </div>
 
+    <!-- Scan Error Alert -->
+    <div id="scan-error-alert" class="auth-modal-alert" style="display:none; margin-top:16px;" role="alert"></div>
+
     <!-- Results -->
     <div class="glass-card results-panel reveal delay-3" id="results-panel" style="display:none;">
-      <div class="results-header-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px;">
+      <div class="results-header-bar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
         <div style="display:flex; align-items:center; gap:10px;">
           <i class="fa-solid fa-list-check" style="color:var(--signal-green);"></i>
-          <h3 style="font-family:var(--font-ui); font-size:1.15rem; font-weight:700;">Discovered Open Ports</h3>
+          <h3 style="font-family:var(--font-ui); font-size:1.15rem; font-weight:700;">Scanned Ports</h3>
         </div>
-        <div>
-          <span class="pill pill-open"><span class="pill-dot pulse"></span>Open TCP Services</span>
+        <div class="results-summary-chips" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <span class="pill" style="background:rgba(255,255,255,0.05); border:1px solid var(--border);"><i class="fa-solid fa-crosshairs" style="color:var(--signal-cyan);"></i> Target: <b id="summary-target" style="margin-left:4px; color:#fff;">—</b></span>
+          <span class="pill" style="background:rgba(255,255,255,0.05); border:1px solid var(--border);"><i class="fa-solid fa-network-wired" style="color:var(--signal-cyan);"></i> Ports Scanned: <b id="summary-scanned" style="margin-left:4px; color:#fff;">0</b></span>
+          <span class="pill pill-open"><span class="pill-dot pulse"></span>Open Found: <b id="summary-open" style="margin-left:4px;">0</b></span>
+          <span class="pill" style="background:rgba(255,255,255,0.05); border:1px solid var(--border);"><i class="fa-solid fa-stopwatch" style="color:var(--signal-cyan);"></i> Duration: <b id="summary-duration" style="margin-left:4px; color:#fff;">0s</b></span>
         </div>
+      </div>
+
+      <!-- Notice when 0 open ports found, but showing all scanned ports -->
+      <div id="no-open-ports-alert" class="auth-modal-alert" style="display:none; margin-bottom:16px; background:rgba(250,204,21,0.08); border-color:rgba(250,204,21,0.3); color:#facc15;" role="status">
+        <i class="fa-solid fa-circle-info"></i> No open ports found in this range (all scanned ports closed or filtered). Full results listed below:
       </div>
 
       <div class="results-toolbar">
         <div class="results-search">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" class="form-input" id="results-search-input" placeholder="Search by port or service..." aria-label="Search discovered open ports">
+          <input type="text" class="form-input" id="results-search-input" placeholder="Search by port or service..." aria-label="Search scanned ports">
+        </div>
+        <div class="results-filter-buttons" style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-outline btn-sm active" data-status-filter="all" id="filter-btn-all">All (<span id="count-all">0</span>)</button>
+          <button type="button" class="btn btn-outline btn-sm" data-status-filter="open" id="filter-btn-open" style="color:var(--signal-green);">Open (<span id="count-open">0</span>)</button>
+          <button type="button" class="btn btn-outline btn-sm" data-status-filter="closed" id="filter-btn-closed" style="color:var(--alert-magenta);">Closed (<span id="count-closed">0</span>)</button>
+          <button type="button" class="btn btn-outline btn-sm" data-status-filter="filtered" id="filter-btn-filtered" style="color:#facc15; display:none;">Filtered (<span id="count-filtered">0</span>)</button>
         </div>
         <div class="results-actions">
           <span id="results-count" style="align-self:center; color:var(--text-muted); font-family:var(--font-mono); font-size:0.8rem;"></span>
@@ -121,16 +139,16 @@
         <table class="results-table">
           <thead>
             <tr>
-              <th data-sort="port" style="cursor:pointer;">Port <i class="fa-solid fa-sort" id="sort-icon-port"></i></th>
-              <th data-sort="service" style="cursor:pointer;">Service <i class="fa-solid fa-sort" id="sort-icon-service"></i></th>
-              <th data-sort="state" style="cursor:pointer;">State <i class="fa-solid fa-sort" id="sort-icon-state"></i></th>
+              <th data-sort="port" style="cursor:pointer; width:25%;">Port <i class="fa-solid fa-sort" id="sort-icon-port"></i></th>
+              <th data-sort="status" style="cursor:pointer; width:35%;">Status <i class="fa-solid fa-sort" id="sort-icon-status"></i></th>
+              <th data-sort="service" style="cursor:pointer; width:40%;">Service <i class="fa-solid fa-sort" id="sort-icon-service"></i></th>
             </tr>
           </thead>
           <tbody id="results-body"></tbody>
         </table>
         <div class="empty-state" id="results-empty" style="display:none;">
           <i class="fa-solid fa-shield-halved"></i>
-          <div id="results-empty-msg">No open ports detected in this range.</div>
+          <div id="results-empty-msg">No ports match your filter.</div>
         </div>
       </div>
     </div>
