@@ -1,0 +1,40 @@
+<header class="site-header">
+  <div class="container nav-inner">
+    <a href="{{ url_for('main.home') }}" class="brand" aria-label="CyberPort Scanner Home">
+      <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Scanner Logo" class="brand-symbol" width="36" height="36">
+      <span class="brand-text">
+        <span class="brand-cyber">Cyber</span><span class="brand-port">Port</span>
+        <span class="brand-tag">SCANNER</span>
+      </span>
+    </a>
+
+    <nav class="nav-links" id="nav-links">
+      <a href="{{ url_for('main.home') }}" class="nav-link{% if request.endpoint == 'main.home' %} active{% endif %}"{% if request.endpoint == 'main.home' %} aria-current="page"{% endif %}>Home</a>
+      <a href="{{ url_for('main.dashboard') }}" class="nav-link{% if request.endpoint in ['main.dashboard', 'main.scanner'] %} active{% endif %}"{% if request.endpoint in ['main.dashboard', 'main.scanner'] %} aria-current="page"{% endif %}>Scanner</a>
+      <a href="{{ url_for('main.history') }}" class="nav-link{% if request.endpoint == 'main.history' %} active{% endif %}"{% if request.endpoint == 'main.history' %} aria-current="page"{% endif %}>History</a>
+      <a href="{{ url_for('main.developer') }}" class="nav-link{% if request.endpoint == 'main.developer' %} active{% endif %}"{% if request.endpoint == 'main.developer' %} aria-current="page"{% endif %}>Developer API</a>
+      <a href="{{ url_for('main.api_docs') }}" class="nav-link{% if request.endpoint == 'main.api_docs' %} active{% endif %}"{% if request.endpoint == 'main.api_docs' %} aria-current="page"{% endif %}>API Docs</a>
+      <a href="{{ url_for('main.about') }}" class="nav-link{% if request.endpoint == 'main.about' %} active{% endif %}"{% if request.endpoint == 'main.about' %} aria-current="page"{% endif %}>About</a>
+      <a href="{{ url_for('main.contact') }}" class="nav-link{% if request.endpoint == 'main.contact' %} active{% endif %}"{% if request.endpoint == 'main.contact' %} aria-current="page"{% endif %}>Contact</a>
+      {% if session.get('user_id') %}
+        <span class="nav-user"><i class="fa-regular fa-user"></i> {{ session.get('username') }}</span>
+        <form action="{{ url_for('main.logout') }}" method="post" class="nav-logout-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="nav-link nav-logout">Logout</button>
+        </form>
+        <a href="{{ url_for('main.dashboard') }}" class="nav-cta"><i class="fa-solid fa-bolt"></i> Start Scanning</a>
+      {% else %}
+        <a href="{{ url_for('main.login') }}" class="nav-link{% if request.endpoint == 'main.login' %} active{% endif %}"{% if request.endpoint == 'main.login' %} aria-current="page"{% endif %} data-auth-modal="login">Login</a>
+        <a href="{{ url_for('main.signup') }}" class="nav-link{% if request.endpoint == 'main.signup' %} active{% endif %}"{% if request.endpoint == 'main.signup' %} aria-current="page"{% endif %} data-auth-modal="signup">Sign Up</a>
+        <a href="{{ url_for('main.dashboard') }}" class="nav-cta"><i class="fa-solid fa-bolt"></i> Start Scanning</a>
+      {% endif %}
+    </nav>
+
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-links">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+{% if not session.get('user_id') %}
+{% include "partials/auth_modal.html" %}
+{% endif %}

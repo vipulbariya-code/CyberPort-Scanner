@@ -14,13 +14,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}CyberPort Scanner — Educational Network Port Scanner{% endblock %}</title>
   <meta name="description" content="{% block description %}CyberPort Scanner is a professional-grade network port scanner built for educational and authorized security testing. Learn TCP/IP scanning fundamentals safely.{% endblock %}">
-  <meta name="robots" content="index, follow">
+  <meta name="robots" content="{% block robots %}index, follow{% endblock %}">
   <meta name="author" content="Vipul Bariya">
-  <link rel="canonical" href="{% block canonical %}{{ request.base_url }}{% endblock %}">
-  <meta property="og:title" content="CyberPort Scanner">
-  <meta property="og:description" content="Professional network port scanner for educational & authorized security testing.">
-  <meta property="og:url" content="https://cyberport-scanner.onrender.com/">
-  <meta property="og:type" content="website">
+  <link rel="canonical" href="{% block canonical %}https://cyberport-scanner.onrender.com{{ request.path }}{% endblock %}">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:site_name" content="CyberPort Scanner">
+  <meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ self.description() }}{% endblock %}">
+  <meta property="og:url" content="{% block og_url %}https://cyberport-scanner.onrender.com{{ request.path }}{% endblock %}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}https://cyberport-scanner.onrender.com/static/images/cyberport-og.png{% endblock %}">
+  <meta property="og:image:alt" content="CyberPort Scanner — Cyberpunk Network Reconnaissance Tool">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="{% block twitter_card %}summary_large_image{% endblock %}">
+  <meta name="twitter:title" content="{% block twitter_title %}{{ self.title() }}{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}{{ self.description() }}{% endblock %}">
+  <meta name="twitter:image" content="{% block twitter_image %}https://cyberport-scanner.onrender.com/static/images/cyberport-og.png{% endblock %}">
+  <meta name="twitter:image:alt" content="CyberPort Scanner — Cyberpunk Network Reconnaissance Tool">
+
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
   <!-- Brand Favicons & App Icons -->
@@ -30,12 +43,8 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
 
-  <!-- Social Sharing / OpenGraph Meta -->
-  <meta property="og:image" content="{{ url_for('static', filename='images/cyberport-og.png', _external=True) }}">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="CyberPort Scanner">
-  <meta name="twitter:description" content="Professional network port scanner for educational & authorized security testing.">
-  <meta name="twitter:image" content="{{ url_for('static', filename='images/cyberport-og.png', _external=True) }}">
+  <!-- Structured Data (JSON-LD) -->
+  {% block structured_data %}{% endblock %}
 
   <!-- Fonts / Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -94,43 +103,7 @@
   </div>
 
   <!-- Header -->
-  <header class="site-header">
-    <div class="container nav-inner">
-      <a href="{{ url_for('main.home') }}" class="brand" aria-label="CyberPort Scanner Home">
-        <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Scanner Logo" class="brand-symbol" width="36" height="36">
-        <span class="brand-text">
-          <span class="brand-cyber">Cyber</span><span class="brand-port">Port</span>
-          <span class="brand-tag">SCANNER</span>
-        </span>
-      </a>
-
-      <nav class="nav-links" id="nav-links">
-        <a href="{{ url_for('main.home') }}" class="nav-link">Home</a>
-        <a href="{{ url_for('main.dashboard') }}" class="nav-link">Scanner</a>
-        <a href="{{ url_for('main.history') }}" class="nav-link">History</a>
-        <a href="{{ url_for('main.developer') }}" class="nav-link">Developer API</a>
-        <a href="{{ url_for('main.api_docs') }}" class="nav-link">API Docs</a>
-        <a href="{{ url_for('main.about') }}" class="nav-link">About</a>
-        <a href="{{ url_for('main.contact') }}" class="nav-link">Contact</a>
-        {% if session.get('user_id') %}
-          <span class="nav-user"><i class="fa-regular fa-user"></i> {{ session.get('username') }}</span>
-          <form action="{{ url_for('main.logout') }}" method="post" class="nav-logout-form">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="nav-link nav-logout">Logout</button>
-          </form>
-          <a href="{{ url_for('main.dashboard') }}" class="nav-cta"><i class="fa-solid fa-bolt"></i> Start Scanning</a>
-        {% else %}
-          <a href="{{ url_for('main.login') }}" class="nav-link">Login</a>
-          <a href="{{ url_for('main.signup') }}" class="nav-link">Sign Up</a>
-          <a href="{{ url_for('main.dashboard') }}" class="nav-cta"><i class="fa-solid fa-bolt"></i> Start Scanning</a>
-        {% endif %}
-      </nav>
-
-      <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-links">
-        <span></span><span></span><span></span>
-      </button>
-    </div>
-  </header>
+  {% include "partials/navbar.html" %}
 
   <main>
     {% with messages = get_flashed_messages(with_categories=true) %}

@@ -88,12 +88,6 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
-  /* Master subtle cyber grid pattern matching homepage */
-  background-image:
-    linear-gradient(to right, rgba(6, 182, 212, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(6, 182, 212, 0.04) 1px, transparent 1px);
-  background-size: 40px 40px;
-  background-attachment: fixed;
 }
 
 a { color: inherit; text-decoration: none; }
@@ -358,8 +352,35 @@ main { position: relative; z-index: 1; min-height: calc(100vh - var(--header-h))
   transform: translateY(-1px);
 }
 
-.nav-toggle { display: none; flex-direction: column; gap: 5px; width: 26px; }
-.nav-toggle span { height: 2px; background: var(--accent-cyan); border-radius: 2px; transition: all 0.25s var(--ease-out); }
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+.nav-toggle span {
+  height: 2px;
+  background: var(--accent-cyan);
+  border-radius: 2px;
+  transition: all 0.25s var(--ease-out);
+  transform-origin: center;
+}
+.nav-toggle.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.nav-toggle.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.nav-toggle.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
 
 /* ---------- Footer ---------- */
 .site-footer {
@@ -549,6 +570,161 @@ main { position: relative; z-index: 1; min-height: calc(100vh - var(--header-h))
 .toast.out { animation: toastOut 0.3s var(--ease-out) forwards; }
 @keyframes toastOut { to { transform: translateX(120%); opacity: 0; } }
 
+/* ---------- Authentication Modal ---------- */
+.auth-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(3, 6, 12, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.28s var(--ease-out), visibility 0.28s var(--ease-out);
+}
+.auth-modal-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+body.modal-open {
+  overflow: hidden;
+}
+.auth-modal-container {
+  width: 100%;
+  max-width: 440px;
+  max-height: 92vh;
+  position: relative;
+  overflow-y: auto;
+}
+.auth-modal-card {
+  position: relative;
+  width: 100%;
+  padding: 34px 30px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid var(--border-hover);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(6, 182, 212, 0.22);
+  transform: scale(0.95) translateY(12px);
+  transition: transform 0.28s var(--ease-out), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.auth-modal-backdrop.open .auth-modal-card {
+  transform: scale(1) translateY(0);
+}
+.auth-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out);
+  z-index: 10;
+}
+.auth-modal-close:hover {
+  color: #ffffff;
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.15);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.35);
+  transform: scale(1.06);
+}
+.auth-modal-title {
+  font-family: var(--font-sans);
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 6px 0 4px;
+}
+.auth-modal-sub {
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.auth-modal-alert {
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  font-size: 0.86rem;
+  font-family: var(--font-sans);
+  line-height: 1.4;
+}
+.auth-switch-btn {
+  background: none;
+  border: none;
+  color: var(--accent-cyan);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+.auth-switch-btn:hover {
+  color: var(--accent-green);
+  text-decoration: underline;
+}
+
+/* Modal Form Styles */
+.auth-form { display: flex; flex-direction: column; gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 1px; color: var(--text-secondary); text-transform: uppercase; font-weight: 500; }
+.form-input {
+  width: 100%;
+  padding: 11px 15px;
+  border-radius: 8px;
+  background: rgba(10, 15, 29, 0.85);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+}
+.form-input::placeholder { color: var(--text-muted); }
+.form-input:focus {
+  outline: none;
+  background: rgba(10, 15, 29, 0.98);
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.35);
+}
+.auth-brand-lockup {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.auth-brand-symbol {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.45);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+}
+.auth-brand-symbol:hover {
+  transform: scale(1.08) rotate(3deg);
+  box-shadow: 0 0 24px rgba(0, 255, 157, 0.75);
+}
+.auth-footer { text-align: center; color: var(--text-secondary); font-size: 0.9rem; margin-top: 20px; }
+.auth-footer a { color: var(--accent-cyan); font-weight: 600; text-decoration: none; }
+.auth-footer a:hover { color: var(--accent-green); text-decoration: underline; }
+
 /* ---------- Responsive base ---------- */
 @media (max-width: 980px) {
   .footer-grid { grid-template-columns: 1fr 1fr; }
@@ -567,6 +743,11 @@ main { position: relative; z-index: 1; min-height: calc(100vh - var(--header-h))
   .brand { font-size: 0.98rem; gap: 9px; }
   .brand-symbol { width: 32px; height: 32px; }
   .brand-tag { font-size: 0.58rem; padding: 1px 5px; }
+}
+@media (max-width: 480px) {
+  .auth-modal-card { padding: 24px 18px; }
+  .auth-modal-title { font-size: 1.4rem; }
+  .auth-modal-backdrop { padding: 12px; }
 }
 @media (max-width: 420px) {
   .brand-tag { display: none; }

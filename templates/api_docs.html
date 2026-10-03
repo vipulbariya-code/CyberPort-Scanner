@@ -1,6 +1,25 @@
 {% extends "base.html" %}
-{% block title %}REST API Documentation — CyberPort Scanner{% endblock %}
-{% block description %}Official OpenAPI 3.0 documentation for CyberPort Scanner REST API v1. Explore endpoints, parameters, examples, and authentication.{% endblock %}
+{% block title %}CyberPort Scanner API Documentation | Developer Guide{% endblock %}
+{% block description %}Complete developer documentation for the CyberPort Scanner REST API. Learn how to authenticate, initiate TCP port scans, poll live progress, and export scan history.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "@id": "https://cyberport-scanner.onrender.com/api/docs#article",
+  "url": "https://cyberport-scanner.onrender.com/api/docs",
+  "headline": "CyberPort Scanner REST API Documentation & Integration Guide",
+  "description": "Complete developer documentation for the CyberPort Scanner REST API. Learn how to authenticate, initiate TCP port scans, poll live progress, and export scan history.",
+  "inLanguage": "en-US",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "CyberPort Scanner",
+    "url": "https://cyberport-scanner.onrender.com/"
+  }
+}
+</script>
+{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -218,7 +237,7 @@
         {% if session.get('user_id') %}
           <a href="{{ url_for('main.developer') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-key"></i> Get API Key</a>
         {% else %}
-          <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-sm"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login to Get Key</a>
+          <a href="{{ url_for('main.login') }}" class="btn btn-primary btn-sm" data-auth-modal="login"><i class="fa-solid fa-arrow-right-to-bracket"></i> Login to Get Key</a>
         {% endif %}
       </div>
     </div>

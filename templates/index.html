@@ -12,15 +12,28 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberPort Scanner | Secure Network Reconnaissance</title>
-    <meta name="description" content="CyberPort Scanner is a modern cybersecurity SaaS platform and developer tool for authorized network reconnaissance, port scanning, and API integration.">
+    <title>CyberPort Scanner | Free Online TCP Port Scanner &amp; Cybersecurity Learning Tool</title>
+    <meta name="description" content="CyberPort Scanner is an educational TCP port scanner for learning network security, port scanning, services, and cybersecurity fundamentals in authorized environments.">
     <meta name="robots" content="index, follow">
     <meta name="author" content="Vipul Bariya">
     <link rel="canonical" href="https://cyberport-scanner.onrender.com/">
-    <meta property="og:title" content="CyberPort Scanner | Secure Network Reconnaissance">
-    <meta property="og:description" content="Professional network port scanner for educational & authorized security testing.">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:site_name" content="CyberPort Scanner">
+    <meta property="og:title" content="CyberPort Scanner | Free Online TCP Port Scanner &amp; Cybersecurity Learning Tool">
+    <meta property="og:description" content="CyberPort Scanner is an educational TCP port scanner for learning network security, port scanning, services, and cybersecurity fundamentals in authorized environments.">
     <meta property="og:url" content="https://cyberport-scanner.onrender.com/">
     <meta property="og:type" content="website">
+    <meta property="og:image" content="https://cyberport-scanner.onrender.com/static/images/cyberport-og.png">
+    <meta property="og:image:alt" content="CyberPort Scanner — Cyberpunk Network Reconnaissance Tool">
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CyberPort Scanner | Free Online TCP Port Scanner &amp; Cybersecurity Learning Tool">
+    <meta name="twitter:description" content="CyberPort Scanner is an educational TCP port scanner for learning network security, port scanning, services, and cybersecurity fundamentals in authorized environments.">
+    <meta name="twitter:image" content="https://cyberport-scanner.onrender.com/static/images/cyberport-og.png">
+    <meta name="twitter:image:alt" content="CyberPort Scanner — Cyberpunk Network Reconnaissance Tool">
+
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- Brand Favicons & App Icons -->
@@ -29,8 +42,47 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.png') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/apple-touch-icon.png') }}">
-    <meta property="og:image" content="{{ url_for('static', filename='images/cyberport-og.png', _external=True) }}">
-    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://cyberport-scanner.onrender.com/#website",
+          "url": "https://cyberport-scanner.onrender.com/",
+          "name": "CyberPort Scanner",
+          "description": "Educational TCP port scanner for learning network security, port scanning, and cybersecurity fundamentals in authorized environments.",
+          "publisher": {
+            "@type": "Person",
+            "name": "Vipul Bariya",
+            "url": "https://github.com/vipulbariya-code"
+          },
+          "inLanguage": "en-US"
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://cyberport-scanner.onrender.com/#software",
+          "name": "CyberPort Scanner",
+          "applicationCategory": "SecurityApplication",
+          "operatingSystem": "Web-based",
+          "url": "https://cyberport-scanner.onrender.com/",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "description": "A modern web-based TCP port scanner and REST API designed for students, educators, and authorized security diagnostics.",
+          "author": {
+            "@type": "Person",
+            "name": "Vipul Bariya",
+            "url": "https://github.com/vipulbariya-code"
+          }
+        }
+      ]
+    }
+    </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,6 +90,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     <script>
         tailwind.config = {
@@ -73,19 +126,10 @@
     </script>
 
     <style>
-        :root {
-            --grid-color: rgba(6, 182, 212, 0.05);
-        }
-
         body {
             background-color: #050810;
             color: #f3f4f6;
             overflow-x: hidden;
-            background-image: 
-                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-            background-size: 40px 40px;
-            background-attachment: fixed;
         }
 
         .glass {
@@ -172,82 +216,12 @@
 </head>
 <body class="antialiased selection:bg-cyber-accent selection:text-white">
 
-    <nav class="fixed w-full z-50 glass border-b border-gray-800/50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo / Brand -->
-                <a href="{{ url_for('main.home') }}" class="flex-shrink-0 flex items-center gap-3 cursor-pointer">
-                    <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Scanner Logo" class="brand-symbol w-8 h-8 rounded shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-                    <span class="font-bold text-xl tracking-tight text-white">CyberPort <span class="brand-tag text-cyber-accent text-sm font-semibold tracking-wider">SCANNER</span></span>
-                </a>
-
-                <!-- Desktop Navigation -->
-                <div class="hidden lg:flex items-center space-x-6 xl:space-x-8">
-                    <a href="{{ url_for('main.home') }}" class="text-cyber-accent font-medium transition-colors">Home</a>
-                    <a href="{{ url_for('main.dashboard') }}" class="text-gray-300 hover:text-white transition-colors">Scanner</a>
-                    <a href="{{ url_for('main.history') }}" class="text-gray-300 hover:text-white transition-colors">History</a>
-                    <a href="{{ url_for('main.developer') }}" class="text-gray-300 hover:text-white transition-colors">Developer API</a>
-                    <a href="{{ url_for('main.api_docs') }}" class="text-gray-300 hover:text-white transition-colors">API Docs</a>
-                    <a href="{{ url_for('main.about') }}" class="text-gray-300 hover:text-white transition-colors">About</a>
-                    <a href="{{ url_for('main.contact') }}" class="text-gray-300 hover:text-white transition-colors">Contact</a>
-                </div>
-
-                <!-- Right Side Actions -->
-                <div class="hidden lg:flex items-center space-x-4">
-                    {% if session.get('user_id') %}
-                        <span class="text-gray-300 text-sm font-medium"><i class="fa-regular fa-user mr-1 text-cyber-accent"></i> {{ session.get('username') }}</span>
-                        <form action="{{ url_for('main.logout') }}" method="post" class="inline">
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="text-gray-300 hover:text-red-400 font-medium text-sm transition-colors">Logout</button>
-                        </form>
-                    {% else %}
-                        <a href="{{ url_for('main.login') }}" class="text-gray-300 hover:text-white font-medium transition-colors">Login</a>
-                        <a href="{{ url_for('main.signup') }}" class="text-gray-300 hover:text-white font-medium transition-colors">Sign Up</a>
-                    {% endif %}
-                    <a href="{{ url_for('main.dashboard') }}" class="bg-cyber-accent hover:bg-cyber-accentHover text-white px-5 py-2 rounded-md text-sm font-semibold transition-all shadow-[0_0_10px_rgba(6,182,212,0.3)] hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]">
-                        Start Scanning
-                    </a>
-                </div>
-
-                <!-- Mobile menu button -->
-                <div class="lg:hidden flex items-center">
-                    <button id="mobile-menu-btn" class="text-gray-300 hover:text-white focus:outline-none p-2" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-menu">
-                        <i class="fa-solid fa-bars text-xl"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Mobile Navigation Menu -->
-        <div id="mobile-menu" class="hidden lg:hidden glass border-t border-gray-800/50">
-            <div class="px-3 pt-3 pb-4 space-y-1 sm:px-4">
-                <a href="{{ url_for('main.home') }}" class="block px-3 py-2 text-cyber-accent font-medium rounded-md hover:bg-white/5">Home</a>
-                <a href="{{ url_for('main.dashboard') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">Scanner</a>
-                <a href="{{ url_for('main.history') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">History</a>
-                <a href="{{ url_for('main.developer') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">Developer API</a>
-                <a href="{{ url_for('main.api_docs') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">API Docs</a>
-                <a href="{{ url_for('main.about') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">About</a>
-                <a href="{{ url_for('main.contact') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">Contact</a>
-                <div class="border-t border-gray-800 my-2"></div>
-                {% if session.get('user_id') %}
-                    <span class="block px-3 py-2 text-gray-300 font-medium"><i class="fa-regular fa-user mr-1 text-cyber-accent"></i> {{ session.get('username') }}</span>
-                    <form action="{{ url_for('main.logout') }}" method="post" class="px-3 py-1">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <button type="submit" class="text-gray-300 hover:text-red-400 font-medium">Logout</button>
-                    </form>
-                {% else %}
-                    <a href="{{ url_for('main.login') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">Login</a>
-                    <a href="{{ url_for('main.signup') }}" class="block px-3 py-2 text-gray-300 hover:text-white rounded-md hover:bg-white/5">Sign Up</a>
-                {% endif %}
-                <a href="{{ url_for('main.dashboard') }}" class="block px-3 py-2 mt-2 text-center bg-cyber-accent text-white rounded-md font-semibold hover:bg-cyber-accentHover shadow-[0_0_10px_rgba(6,182,212,0.3)]">Start Scanning</a>
-            </div>
-        </div>
-    </nav>
+    {% include "partials/navbar.html" %}
 
     <main>
         {% with messages = get_flashed_messages(with_categories=true) %}
           {% if messages %}
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24" aria-live="polite">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6" aria-live="polite">
               {% for category, message in messages %}
                 <div class="p-4 mb-4 rounded-lg bg-cyber-800 border border-cyber-accent/30 text-white flex items-center justify-between">
                   <span>{{ message }}</span>
@@ -258,7 +232,7 @@
         {% endwith %}
 
         <!-- Hero Section -->
-        <section class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <section class="relative pt-16 pb-20 lg:pt-28 lg:pb-32 overflow-hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     
@@ -648,7 +622,7 @@
                 <!-- Brand & Mission -->
                 <div>
                     <a href="{{ url_for('main.home') }}" class="flex items-center gap-2 mb-3 cursor-pointer">
-                        <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Logo" class="w-7 h-7">
+                        <img src="{{ url_for('static', filename='images/cyberport-symbol.svg') }}" alt="CyberPort Scanner Logo" class="w-7 h-7" width="28" height="28">
                         <span class="font-bold text-lg text-white">CyberPort <span class="text-cyber-accent text-xs font-semibold">SCANNER</span></span>
                     </a>
                     <p class="text-sm text-gray-400 leading-relaxed mb-4">
@@ -713,24 +687,9 @@
         </div>
     </footer>
 
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
         document.getElementById('year').textContent = new Date().getFullYear();
-
-        const btn = document.getElementById('mobile-menu-btn');
-        const menu = document.getElementById('mobile-menu');
-
-        if (btn && menu) {
-            btn.addEventListener('click', () => {
-                const isHidden = menu.classList.toggle('hidden');
-                btn.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
-            });
-            menu.querySelectorAll('a').forEach((a) => {
-                a.addEventListener('click', () => {
-                    menu.classList.add('hidden');
-                    btn.setAttribute('aria-expanded', 'false');
-                });
-            });
-        }
 
         function copyCode() {
             const code = `curl -X POST https://cyberport-scanner.onrender.com/api/v1/scans \\
