@@ -77,22 +77,7 @@
     <div class="loader-bar-track"><div class="loader-bar-fill"></div></div>
     <div class="loader-status">initializing secure session…</div>
   </div>
-  <script>
-    /* Safe inline fallback: ensures loading screen dismisses even if external resources stall */
-    (function () {
-      var dismissed = false;
-      function hideLoader() {
-        if (dismissed) return;
-        dismissed = true;
-        var el = document.getElementById('loading-screen');
-        if (el && !el.classList.contains('hidden')) {
-          el.classList.add('hidden');
-          setTimeout(function () { if (el) el.style.display = 'none'; }, 500);
-        }
-      }
-      setTimeout(hideLoader, 1800);
-    })();
-  </script>
+
 
   <!-- Ambient background layers (matching homepage) -->
   <canvas id="matrix-canvas" style="display:none;"></canvas>
@@ -179,6 +164,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
   <script src="{{ url_for('static', filename='js/matrix.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <!-- hideLoader defined in main.js; setTimeout(hideLoader, ...) -->
   {% block extra_scripts %}{% endblock %}
 </body>
 </html>

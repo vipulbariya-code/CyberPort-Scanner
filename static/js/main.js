@@ -38,11 +38,12 @@
 
   // Safe fallback timeout: dismiss after 1.5s max regardless of external resources
   const MAX_LOADER_TIMEOUT = 1500;
-  const fallbackTimer = setTimeout(dismissLoader, MAX_LOADER_TIMEOUT);
+  window.hideLoader = dismissLoader;
+  const fallbackTimer = setTimeout(hideLoader, MAX_LOADER_TIMEOUT);
 
   function scheduleDismiss() {
     clearTimeout(fallbackTimer);
-    setTimeout(dismissLoader, prefersReducedMotion ? 0 : 180);
+    setTimeout(hideLoader, prefersReducedMotion ? 0 : 180);
   }
 
   if (document.readyState === 'complete') {
