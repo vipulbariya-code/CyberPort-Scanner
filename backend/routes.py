@@ -44,9 +44,17 @@ JOB_TTL = timedelta(hours=1)
 def page_login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
-        if not session.get("user_id"):
+        user_id = session.get("user_id")
+        if not user_id:
             flash("Please log in to access the scanner.", "error")
             return redirect(url_for("main.login", next=request.path))
+
+        # Verify user still exists in database
+        if not current_app.db.get_user_by_id(user_id):
+            session.clear()
+            flash("Session expired. Please log in again.", "error")
+            return redirect(url_for("main.login", next=request.path))
+
         return view(*args, **kwargs)
     return wrapped
 
@@ -54,8 +62,15 @@ def page_login_required(view):
 def api_login_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
-        if not session.get("user_id"):
+        user_id = session.get("user_id")
+        if not user_id:
             return jsonify({"success": False, "error": "Authentication required."}), 401
+
+        # Verify user still exists in database
+        if not current_app.db.get_user_by_id(user_id):
+            session.clear()
+            return jsonify({"success": False, "error": "Session expired. Please log in again."}), 401
+
         return view(*args, **kwargs)
     return wrapped
 

@@ -446,6 +446,14 @@ class Database:
             ).fetchone()
             return dict(row) if row else None
 
+    def get_user_by_id(self, user_id):
+        with self.get_connection() as conn:
+            row = conn.execute(
+                "SELECT id, username, email, password_hash FROM users WHERE id = ?",
+                (user_id,),
+            ).fetchone()
+            return dict(row) if row else None
+
     def create_scan(self, user_id, target, resolved_ip, start_port, end_port,
                      total_ports_scanned, open_ports, duration_seconds,
                      status="completed", created_at=None):

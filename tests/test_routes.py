@@ -165,13 +165,41 @@ class TestAuthenticationAndSessions:
         # Clear session for next attempt
         client.post("/logout")
 
-        # Legitimate relative path
         res3 = client.post("/login?next=/history", data={
             "email": "redir@example.com",
             "password": "Password123",
         })
         assert res3.status_code == 302
         assert res3.headers["Location"] == "/history"
+
+    def test_stale_session_rejection(self, client, app):
+        with app.app_context():
+            uid = app.db.create_user("stale_user", "stale@test.com", "hash")
+
+        with client.session_transaction() as sess:
+            sess["user_id"] = uid
+            sess["username"] = "stale_user"
+
+        # Should succeed first
+        assert client.get("/dashboard").status_code == 200
+
+        # Now delete user to simulate stale session
+        with app.app_context():
+            with app.db.get_connection() as conn:
+                conn.execute("DELETE FROM users WHERE id = ?", (uid,))
+
+        # Now the same request should redirect to login and clear session
+        res = client.get("/dashboard", follow_redirects=True)
+        assert res.status_code == 200
+        assert b"Session expired. Please log in again." in res.data
+
+        # Same for API endpoints
+        with client.session_transaction() as sess:
+            sess["user_id"] = uid
+
+        api_res = client.post("/api/scan/start", json={"target": "127.0.0.1"})
+        assert api_res.status_code == 401
+        assert api_res.get_json()["error"] == "Session expired. Please log in again."
 
 
 class TestCSRFProtection:
